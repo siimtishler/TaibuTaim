@@ -1,26 +1,34 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+	<nav-bar v-if="!loggedIn"></nav-bar>
+	<nav-bar-after-login v-else></nav-bar-after-login>
+
+	<button @click.prevent="loggedIn = !loggedIn">Log in</button>
+
+	<router-view>
+
+	</router-view>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script setup>
+import NavBar from './components/NavBar.vue';
+import NavBarAfterLogin from './components/NavBarAfterLogin.vue';
+import { ref, reactive, onBeforeMount } from 'vue';
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+const loggedIn = ref(false);
+
+
+
+
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+body{
+	width:100vw;
+	height:100vh;
+    background-image: url('assets/bg4.svg'); 
+	background-size: cover;
+	background-position: bottom;
+	background-repeat: no-repeat;
 }
+
 </style>
