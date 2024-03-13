@@ -2,6 +2,7 @@
 #include <RTDB.h>
 #include "lightsensor.h"
 #include "gauge.h"
+#include "bleserial.h"
 
 #define DEBUG
 #include "SerialDebug.h"
@@ -15,6 +16,7 @@ void setup()
 	Serial.begin(115200);
 	initLightSensor();
 	initGauge();
+	initBleSerial();
 	ConnectWifi();
 	ConnectFirebase();
 	DBGL("*******/TERE TAIBUTAIM\\*******");
@@ -25,7 +27,7 @@ void loop()
 	gaugeTask(&gauge_measurements);
 	sendLightSensorStatus(light_measurements);
 	sendBatteryStatus(gauge_measurements);
-	delay(1000);
+	bleSerialTask();
 }
 
 // #include "Adafruit_VEML7700.h"
