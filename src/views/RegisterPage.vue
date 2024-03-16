@@ -12,37 +12,37 @@
                             <div class="card-body p-4 p-lg-5 m-lg-2 text-black text-center">
                                 <form>
 
-                                    <h5 class="h3 pb-3 mb-3 text-center" style="letter-spacing: 1px;">Sign in
+                                    <h5 class="h3 pb-3 mb-3 text-center" style="letter-spacing: 1px;">Logi sisse
                                     </h5>
                                     
                                     <div class="form-outline mb-4">
                                         
-                                        <input placeholder="Email" type="email" id="emailForm" class="form-control form-control-lg"
+                                        <input placeholder="E-mail" type="email" id="emailForm" class="form-control form-control-lg"
                                             v-model="email" />
                                     </div>
                                     <div class="form-outline mb-4">
-                                        <input placeholder="Password" type="password" id="passwordForm" class="form-control form-control-lg "
+                                        <input placeholder="Salasõna" type="password" id="passwordForm" class="form-control form-control-lg "
                                             v-model="password" />
                                     </div>
                                     
                                     <div class="button-container mb-4">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #D2DECB;">Login</button>
+                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #D2DECB;">Logi sisse</button>
                                     </div>
                                     <div class="button-container">
                                         <button class="btn btn-lg btn-block" type="button" style="background-color: #DEA49C;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google me-2" viewBox="1 0 14 19">
                                             <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"/>
                                             </svg>
-                                            Sign in with Google
+                                            Google
                                         </button>
                                     </div>
                                     <div class="d-flex mt-4 pt-3">
                                         <hr class="my-auto flex-grow-1">
-                                        <div class="px-4" style="color: #393f81;">Don't have an account?</div>
+                                        <div class="px-4" style="color: #393f81;">Pole kasutajat?</div>
                                         <hr class="my-auto flex-grow-1">
                                     </div>
                                     <div class="button-container mt-3">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #CADBDE;">Register</button>
+                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #CADBDE;">Registreeri</button>
                                     </div>
                                 </form>
                             </div>
@@ -113,27 +113,21 @@ const signInWithGoogle = () => {
 }
 
 .btn {
-    width: 50%;
+    width: 45%;
     margin-right: 5px; /* Add margin between buttons if needed */
+    transition: all 0.05s ease; /* Smooth transition for the box shadow */
+    border:none;
 }
 
-/* .divider::before{
-    content: '-';
-    max-width: 100%;
-    height: 1px;
+.btn:hover {
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.264);  */
+    opacity: 0.9;
 }
 
-.divider::after{
-    height: 1px;
-    content:'-';
-    max-width: 100%;
+.btn:active {
+    opacity: 1;
+    transform: translate(0,5%);
+    box-shadow: 0 0 0;
 }
-
-.divider{
-    display:flex;
-    align-items:center;
-    flex-wrap: wrap;
-} */
-
 
 </style>

@@ -2,7 +2,7 @@
 	<nav-bar v-if="!loggedIn"></nav-bar>
 	<nav-bar-after-login v-else></nav-bar-after-login>
 
-	<button @click.prevent="loggedIn = !loggedIn">Log in</button>
+	<!-- <button @click.prevent="loggedIn = !loggedIn">Log in</button> -->
 
 	<router-view>
 
