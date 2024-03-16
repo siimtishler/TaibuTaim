@@ -9,10 +9,12 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "firebase": "^10.8.1",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.50.0",
     "vue": "^3.2.13",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "@vue/cli-service": "~5.0.0"
+    "@vue/cli-service": "^5.0.8"
   }
 }

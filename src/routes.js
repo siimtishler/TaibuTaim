@@ -1,7 +1,7 @@
 import {createRouter, createWebHashHistory} from 'vue-router';
 import HomePage from './views/HomePage.vue';
-import RegisterPage from './views/RegisterPage.vue';
 import SigninPage from './views/SigninPage.vue';
+import RegisterPage from './views/RegisterPage.vue';
 import FeedPage from './views/FeedPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 

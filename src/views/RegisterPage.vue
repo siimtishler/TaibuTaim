@@ -4,45 +4,66 @@
             <div class="col col-xl-10">
                 <div class="card" style="border-radius: 1rem;">
                     <div class="row g-0">
-                        <div class="col-md-6 col-lg-5 d-none d-md-block">
-                            <img src="../assets/login2.jpg"
-                                alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
+                        <div class="col-md-6 col-lg-5 d-none d-md-block side-image">
                         </div>
                         <div class="col-md-6 col-lg-7 d-flex align-items-center">
-                            <div class="card-body p-4 p-lg-5 m-lg-2 text-black text-center">
+                            <div class="card-body p-3 p-lg-5 m-lg-2 text-black text-center">
+                                <h3 class="mb-3">Loo kasutaja</h3>
                                 <form>
-
-                                    <h5 class="h3 pb-3 mb-3 text-center" style="letter-spacing: 1px;">Logi sisse
-                                    </h5>
-                                    
                                     <div class="form-outline mb-4">
-                                        
-                                        <input placeholder="E-mail" type="email" id="emailForm" class="form-control form-control-lg"
-                                            v-model="email" />
+                                        <input 
+                                            placeholder="E-mail" 
+                                            type="email" 
+                                            id="emailForm" 
+                                            class="form-control form-control-lg"
+                                            v-model="email" 
+                                        />
                                     </div>
+                                    <div class="form-outline mb-4 position-relative">
+                                        <input 
+                                            placeholder="Salasõna" 
+                                            :type="passwordVisible ? 'text' : 'password'"
+                                            id="passwordForm" 
+                                            class="form-control form-control-lg "
+                                            v-model="password"
+                                        />
+                                        <button @click="togglePasswordVisibility" 
+                                            class="eye-btn position-absolute end-0 top-50 translate-middle-y"
+                                            style="height: 100%;">
+                                            <i :class="passwordVisible ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                                        </button>
+                                    </div>
+
                                     <div class="form-outline mb-4">
-                                        <input placeholder="Salasõna" type="password" id="passwordForm" class="form-control form-control-lg "
-                                            v-model="password" />
+                                        <input 
+                                            placeholder="Korda salasõna" 
+                                            :type="passwordVisible ? 'text' : 'password'"
+                                            id="confirmPasswordForm" 
+                                            class="form-control form-control-lg "
+                                            v-model="confirmPassword" 
+                                        />
                                     </div>
                                     
                                     <div class="button-container mb-4">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #D2DECB;">Logi sisse</button>
-                                    </div>
-                                    <div class="button-container">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #DEA49C;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google me-2" viewBox="1 0 14 19">
-                                            <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"/>
-                                            </svg>
-                                            Google
+                                        <button 
+                                            class="btn btn-lg btn-block" 
+                                            type="button" style="background-color: #CADBDE;">
+                                            Registreeri
                                         </button>
                                     </div>
-                                    <div class="d-flex mt-4 pt-3">
+           
+                                    <div class="d-flex mt-3 pt-2">
                                         <hr class="my-auto flex-grow-1">
-                                        <div class="px-4" style="color: #393f81;">Pole kasutajat?</div>
+                                        <div class="px-4" style="color: #393f81;">Kasutaja juba olemas?</div>
                                         <hr class="my-auto flex-grow-1">
                                     </div>
-                                    <div class="button-container mt-3">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #CADBDE;">Registreeri</button>
+                                    <div class="button-container mt-4">
+                                        <button 
+                                            @click="$router.push('/signin')" 
+                                            class="btn btn-lg btn-block" 
+                                            type="button" 
+                                            style="background-color:#D2DECB ;">Logi sisse
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -63,9 +84,14 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 const router = useRouter();
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('')
 
-const loginImageRef = ref(null);
-const containerRef = ref(null);
+const passwordVisible = ref(false);
+
+// Methods
+const togglePasswordVisibility = () => {
+    passwordVisible.value = !passwordVisible.value;
+};
 
 const register = () => {
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
@@ -79,48 +105,39 @@ const register = () => {
         });
 };
 
-
-onMounted(() => {
-    adjustLoginImageHeight();
-    window.addEventListener('resize', adjustLoginImageHeight);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener('resize', adjustLoginImageHeight);
-});
-
-
-const adjustLoginImageHeight = () => {
-    const loginImage = loginImageRef.value;
-    if (loginImage) {
-        loginImage.style.height = `${containerRef.value.clientHeight}px`;
-    }
-};
-
-const signInWithGoogle = () => {
-
-};
-
 </script>
 
 
 <style scoped>
 
-.button-container {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center the buttons horizontally */
+.side-image {
+    content: '';
+    background-image: url('../assets/login2.jpg');
+    background-size: cover;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    border-radius: 1rem 0 0 1rem; /* Rounded corners */
+}
+
+.eye-btn {
+    border:none;
+    border-radius: 0 0.5rem 0.5rem 0;
+    width:3rem;
+    transition: all 0.1s ease;
+}
+
+.eye-btn:hover{
+    opacity: 0.8;
 }
 
 .btn {
     width: 45%;
-    margin-right: 5px; /* Add margin between buttons if needed */
-    transition: all 0.05s ease; /* Smooth transition for the box shadow */
+    margin-right: 5px; 
+    transition: all 0.05s ease; 
     border:none;
 }
 
 .btn:hover {
-    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.264);  */
     opacity: 0.9;
 }
 
