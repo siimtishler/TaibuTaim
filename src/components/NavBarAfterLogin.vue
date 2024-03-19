@@ -1,5 +1,4 @@
 <template>
-
     <nav class="navbar navbar-light bg-light navbar-expand-sm">
         <div class="container-fluid">
             <a href="#" class="navbar-brand">Taibu Taim</a>

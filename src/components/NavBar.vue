@@ -3,16 +3,19 @@
         <div class="container-fluid">
             <div class="row align-items-center justify-content-center w-100">
                 <div class="col-auto d-flex align-items-center">
-                    <img 
-                        class="logo-img mr-2" 
-                        src="../assets/site-logo.png" 
-                        alt=""
-                        @click="$router.push('/')
-                    ">
-                    <router-link class="navbar-brand mb-0" to="/">Taibu Taim</router-link>
-                </div>
-                <div class="col-auto">
+                    
                     <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <img 
+                            class="logo-img mr-2" 
+                            src="../assets/site-logo.png" 
+                            alt=""
+                            @click="$router.push('/')
+                        ">
+                            <router-link class="navbar-brand mb-0" to="/">Taibu Taim</router-link>
+                        </li>
+                        
+                        
                         <li class="nav-item">
                             <router-link class="nav-link" to="/">Kodu</router-link>
                         </li>
@@ -49,6 +52,11 @@
 .navbar {
     font-family: 'Monsterrat';
     font-size: 1.2rem;
+}
+
+.nav-link{
+    justify-content: center;
+    text-align: center;
 }
 
 .nav-item {
