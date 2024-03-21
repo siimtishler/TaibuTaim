@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "bootstrap-vue-next": "^0.16.6",
     "firebase": "^10.8.1",
     "primeicons": "^6.0.1",
     "primevue": "^3.50.0",
