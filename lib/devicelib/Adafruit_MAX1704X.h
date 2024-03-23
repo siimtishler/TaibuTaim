@@ -57,7 +57,7 @@ public:
   Adafruit_MAX17048();
   ~Adafruit_MAX17048();
 
-  bool begin(TwoWire *wire = &Wire);
+  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl);
 
   uint16_t getICversion(void);
   uint8_t getChipID(void);

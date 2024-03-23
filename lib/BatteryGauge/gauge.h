@@ -14,4 +14,5 @@ float getPercentage();
 float getChgRate();
 
 void printGaugeMeasurements(gauge_measurements_t* );
+gauge_measurements_t getGaugeData();
 void gaugeTask(gauge_measurements_t*);

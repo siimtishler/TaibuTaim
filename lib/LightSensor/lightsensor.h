@@ -14,4 +14,5 @@ uint16_t getWhite();
 uint16_t getAmbient();
 
 void printLightMeasurements(light_sens_measurements_t* );
+light_sens_measurements_t getLightData();
 void lightSensorTask(light_sens_measurements_t*);

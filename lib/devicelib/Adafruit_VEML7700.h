@@ -20,7 +20,6 @@
 #include "Arduino.h"
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_I2CRegister.h>
-#include <Wire.h>
 
 #define VEML7700_I2CADDR_DEFAULT 0x10 ///< I2C address
 
@@ -83,7 +82,7 @@ typedef enum {
 class Adafruit_VEML7700 {
 public:
   Adafruit_VEML7700();
-  bool begin(TwoWire *theWire = &Wire);
+  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl);
 
   void enable(bool enable);
   bool enabled(void);

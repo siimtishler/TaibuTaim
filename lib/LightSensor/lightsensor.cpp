@@ -7,24 +7,30 @@
 
 #define LIGHT_SENSOR_TIMEOUT SEC_TO_MS(2)
 
-Adafruit_VEML7700 sensor = Adafruit_VEML7700();
+#define LIGHT_SDA_PIN       7
+#define LIGHT_SCL_PIN       6
+
+Adafruit_VEML7700 lightsensor = Adafruit_VEML7700();
 
 uint16_t getLux() {
-    return (uint16_t)sensor.readLux(VEML_LUX_AUTO);
+    return (uint16_t)lightsensor.readLux(VEML_LUX_AUTO);
 }
 
 uint16_t getWhite() {
-    return sensor.readWhite();
+    return lightsensor.readWhite();
 }
 
 uint16_t getAmbient() {
-    return sensor.readALS();
+    return lightsensor.readALS();
 }
 
 boolean initLightSensor(){
-    if(sensor.begin()) {
-        DBGL("Light sensor inited");
-        return true;
+    for (int i = 0; i < 10; i++)
+    {
+        if(lightsensor.begin(&Wire, LIGHT_SDA_PIN, LIGHT_SCL_PIN)) {
+            DBGL("Light sensor inited");
+            return true;
+        }
     }
     return false;
 }
@@ -38,15 +44,26 @@ void printLightMeasurements(light_sens_measurements_t* measurements){
     DBGL(measurements->ambient);
 }
 
+light_sens_measurements_t getLightData() {
+    light_sens_measurements_t measurements = {0};
+
+    measurements.lux = getLux();
+    measurements.white = getWhite();
+    measurements.ambient = getAmbient();
+
+#ifdef DEBUG
+    printLightMeasurements(&measurements);
+#endif
+
+    return measurements;
+}
+
 void lightSensorTask(light_sens_measurements_t* measurements) {
     static uint32_t last_task_ms = 0;
     if(millis() - last_task_ms > LIGHT_SENSOR_TIMEOUT){
 
-        measurements->lux = getLux();
-        measurements->white = getWhite();
-        measurements->ambient = getAmbient();
 
-        // printLightMeasurements(measurements);
+        printLightMeasurements(measurements);
 
         last_task_ms = millis();
     }

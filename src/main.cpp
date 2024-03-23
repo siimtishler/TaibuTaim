@@ -1,33 +1,87 @@
 #include <Arduino.h>
-#include <RTDB.h>
 #include "lightsensor.h"
 #include "gauge.h"
+#include "soilsensor.h"
+#include "humiditysensor.h"
+#include "driver/temp_sensor.h"
+
+#include "sensorstask.h"
+
+
 #include "bleserial.h"
+#include "RTDB.h"
+
+#include "timeutils.h"
 
 #define DEBUG
 #include "SerialDebug.h"
 
 
+void initTempSensor(){
+    temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT();
+    temp_sensor.dac_offset = TSENS_DAC_L2;  // TSENS_DAC_L2 is default; L4(-40°C ~ 20°C), L2(-10°C ~ 80°C), L1(20°C ~ 100°C), L0(50°C ~ 125°C)
+    temp_sensor_set_config(temp_sensor);
+    temp_sensor_start();
+}
+
 light_sens_measurements_t light_measurements = {0};
 gauge_measurements_t gauge_measurements = {0};
 
+#include "Wire.h"
+
 void setup()
 {
+
 	Serial.begin(115200);
-	initLightSensor();
-	initGauge();
-	initBleSerial();
+	DBGL("*******/TERE TAIBUTAIM\\*******");
+	delay(10);
+
+	// initSoilSensor();
+	
+	
+	// initBleSerial();
 	ConnectWifi();
 	ConnectFirebase();
-	DBGL("*******/TERE TAIBUTAIM\\*******");
 }
 void loop()
-{	
-	lightSensorTask(&light_measurements);
-	gaugeTask(&gauge_measurements);
-	sendLightSensorStatus(light_measurements);
-	sendBatteryStatus(gauge_measurements);
-	bleSerialTask();
+{
+	sensorsTask();
+	// sensors_event_t humidity, temp;
+	// shtc3.getEvent(&humidity, &temp);
+	// DBG("Temp: "); DBGL(temp.temperature);
+	// DBG("Humidity: "); DBGL(humidity.relative_humidity);
+
+	// float tempr = 0;
+	// temp_sensor_read_celsius(&tempr);
+	// DBG("Temp from internal "); DBGL(tempr);
+	// Wire.end();
+	// delay(10);
+
+	// initHumiditySensor();
+
+	// measureHumidityAndTemp();
+	// getLastMeasuredHumidity();
+
+	// Wire.end();
+	// delay(10);
+	// Wire.begin(7,6);
+
+	// if(initLightSensor()) {
+	// 	DBGL(getLux());
+	// }
+	// else {
+	// 	DBGL("Putsis");
+	// }
+	// delay(5000);
+
+	// measureSoil();
+
+	// lightSensorTask(&light_measurements);
+	// gaugeTask(&gauge_measurements);
+	// sendLightSensorStatus(light_measurements);
+
+	// sendBatteryStatus(gauge_measurements);
+	// bleSerialTask();
 }
 
 // #include "Adafruit_VEML7700.h"

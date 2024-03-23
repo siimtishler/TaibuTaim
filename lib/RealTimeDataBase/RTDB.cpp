@@ -19,7 +19,7 @@
 #define API_KEY 					_API_KEY
 #define DATABASE_URL 				_DATABASE_URL
 
-#define BATTERY_SEND_TIMEOUT 		SEC_TO_MS(10)
+#define BATTERY_SEND_TIMEOUT 		SEC_TO_MS(5)
 
 FirebaseAuth auth;
 FirebaseConfig config;
@@ -143,9 +143,6 @@ void sendBatteryStatus(gauge_measurements_t measurements)
 		SetBatteryVoltage(measurements.voltage);
 		delay(200);
 		SetBatteryPercentage(measurements.percentage);
-		delay(200);
-		SetBatteryChgRate(measurements.chg_rate);
-		delay(200);
 		last_send = millis();
 	}
 }
