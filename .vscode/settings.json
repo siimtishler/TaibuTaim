@@ -291,6 +291,9 @@
     "string_view": "cpp",
     "initializer_list": "cpp",
     "memory_resource": "cpp",
-    "algorithm": "cpp"
+    "algorithm": "cpp",
+    "*.tcc": "cpp",
+    "memory": "cpp",
+    "random": "cpp"
   }
 }

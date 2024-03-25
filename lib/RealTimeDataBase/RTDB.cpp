@@ -9,7 +9,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 // These are defined in ignore/API.h
@@ -32,37 +32,28 @@ bool signupOK = false;
 static boolean IsFireBaseReady()
 {
 	static uint32_t sendDataPrev = 0;
-	if (Firebase.ready() && signupOK && (millis() - sendDataPrev > 200 || sendDataPrev == 0))
+	while (!(Firebase.ready() && signupOK && (millis() - sendDataPrev > 200 || sendDataPrev == 0)))
 	{
 		sendDataPrev = millis();
-		return true;
 	}
-	return false;
+	return true;
 }
 
-// Returns JSON format log entry
-static FirebaseJson SetLogEntryJSON(String tagUUID, String name, String type, String action)
-{
-	FirebaseJson fbjson;
-	fbjson.add("name", name);
-	fbjson.add("UUID", tagUUID);
-	fbjson.add("type", type);
-	fbjson.add("Event", action);
-
-	return fbjson;
+static void SetBatteryDataJSON(gauge_measurements_t measurements, FirebaseJson *pfbjson) {
+	pfbjson->add("percentage", String(measurements.percentage));
+	pfbjson->add("voltage", String(measurements.voltage));					 
+	pfbjson->add("chgrate", String(measurements.chg_rate));
 }
 
-// Inits and returns JSON format student
-static FirebaseJson SetStudentJSON()
-{
-	FirebaseJson fbjson;
-	struct tm semester_end = {0};				   // Gets semester end date
-	unsigned long long semester_end_timestamp = 0; // Converts into timestamp
-	fbjson.add("owner", "TBD");
-	fbjson.add("type", "student");					  // Default value is student.
-	fbjson.add("date_valid", semester_end_timestamp); // From web interface can change added card type
+static void SetHumidityDataJSON(humidity_measurements_t measurements, FirebaseJson *pfbjson) {
+	pfbjson->add("humidty", String(measurements.humidity));
+	pfbjson->add("temperature", String(measurements.temperature));
+}
 
-	return fbjson;
+static void SetLightDataJSON(light_sens_measurements_t measurements, FirebaseJson *pfbjson) {
+	pfbjson->add("lux", String(measurements.lux));
+	pfbjson->add("ambient", String(measurements.ambient));
+	pfbjson->add("white", String(measurements.white));
 }
 
 static void SendWiFiTimestamp()
@@ -76,146 +67,88 @@ static void SendWiFiTimestamp()
 	}
 }
 
-static bool SetBatteryVoltage(float voltage)
+static bool PushBatteryData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		String voltage_str = String(voltage);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "battery/voltage", voltage_str))
+		if (Firebase.RTDB.pushJSONAsync(&fbdo, "battery/", &fbjson))
 		{
-			DBG("Voltage: ");
-			DBGL(voltage_str);
+			String str;
+			fbjson.toString(str,true);
+			DBGL(str);
 			return true;
 		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
+		DBGL(fbdo.errorReason());
 	}
 	return false;
 }
 
-static bool SetBatteryChgRate(float chg_rate)
+static bool PushHumidityData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		String chg_rate_str = String(chg_rate);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "battery/chgrate", chg_rate_str))
+		if (Firebase.RTDB.setJSONAsync(&fbdo, "humidity/", &fbjson))
 		{
-			DBG("Charge Rate: ");
-			DBGL(chg_rate_str);
+			String str;
+			fbjson.toString(str,true);
+			DBGL(str);
 			return true;
 		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
+		DBGL(fbdo.errorReason());
 	}
 	return false;
 }
 
-static bool SetBatteryPercentage(float percentage)
+static bool PushLightData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		String percentage_str = String(percentage);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "battery/percentage", percentage_str))
+		if (Firebase.RTDB.setJSONAsync(&fbdo, "light/", &fbjson))
 		{
-			DBG("Percentage: ");
-			DBGL(percentage_str);
+			String str;
+			fbjson.toString(str,true);
+			DBGL(str);
 			return true;
 		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
+		DBGL(fbdo.errorReason());
 	}
 	return false;
 }
 
-void sendBatteryStatus(gauge_measurements_t measurements)
+static bool PushSoilData(uint16_t soilMoisture)
 {
-	static uint32_t last_send = 0;
-	if (millis() - last_send > BATTERY_SEND_TIMEOUT)
-	{
-		DBGL("Sending batt status");
-		delay(200);
-		SetBatteryVoltage(measurements.voltage);
-		delay(200);
-		SetBatteryPercentage(measurements.percentage);
-		last_send = millis();
-	}
-}
-
-static boolean SetLux(uint16_t lux){
 	if (IsFireBaseReady())
 	{
-		String lux_str = String(lux);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "light/lux", lux_str))
+		String str_soilMoisture = String(soilMoisture);
+		if (Firebase.RTDB.setStringAsync(&fbdo, "soil_moisture/", str_soilMoisture.c_str()))
 		{
-			DBG("Lux: ");
-			DBGL(lux_str);
 			return true;
 		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
+		DBGL(fbdo.errorReason());
 	}
 	return false;
 }
 
-static boolean SetWhite(uint16_t white){
-	if (IsFireBaseReady())
-	{
-		String white_str = String(white);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "light/white", white_str))
-		{
-			DBG("White: ");
-			DBGL(white_str);
-			return true;
-		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
-	}
-	return false;
+void sendBatteryMeasurements(gauge_measurements_t measurements) {
+	FirebaseJson fbjson;
+	SetBatteryDataJSON(measurements, &fbjson);
+	PushBatteryData(fbjson);
 }
 
-static boolean SetAmbient(uint16_t ambient){
-	if (IsFireBaseReady())
-	{
-		String ambient_str = String(ambient);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "light/ambient", ambient_str))
-		{
-			DBG("Ambient: ");
-			DBGL(ambient_str);
-			return true;
-		}
-		else
-		{
-			DBGL(fbdo.errorReason());
-		}
-	}
-	return false;
+void sendHumidityMeasurements(humidity_measurements_t measurements) {
+	FirebaseJson fbjson;
+	SetHumidityDataJSON(measurements, &fbjson);
+	PushHumidityData(fbjson);
 }
 
-void sendLightSensorStatus(light_sens_measurements_t measurements)
-{
-	static uint32_t last_send = 0;
-	if (millis() - last_send > BATTERY_SEND_TIMEOUT)
-	{
-		DBGL("Sending light status");
-		delay(200);
-		SetLux(measurements.lux);
-		delay(200);
-		SetWhite(measurements.white);
-		delay(200);
-		SetAmbient(measurements.ambient);
-		delay(200);
-		last_send = millis();
-	}
+void sendLightSensorMeasurements(light_sens_measurements_t measurements) {
+	FirebaseJson fbjson;
+	SetLightDataJSON(measurements, &fbjson);
+	PushLightData(fbjson);
+}
+
+void sendSoilMeasurements(uint16_t measurements) {
+	PushSoilData(measurements);
 }
 
 
@@ -250,7 +183,7 @@ void ConnectWifi()
 	while (WiFi.status() != WL_CONNECTED && millis() - startMillis < 5000)
 	{
 		DBG(".");
-		delay(100);
+		delay(50);
 	}
 
 	if (WiFi.status() == WL_CONNECTED)
@@ -269,6 +202,11 @@ void ConnectWifi()
 	}
 }
 
+void DisconnectWifi() {
+	WiFi.disconnect();
+	WiFi.mode(WIFI_OFF);
+}
+
 // Creates Firebase connection
 void ConnectFirebase()
 {
@@ -281,15 +219,15 @@ void ConnectFirebase()
 	auth.user.password = "123456";
 	config.database_url = DATABASE_URL;
 
-	if (Firebase.signUp(&config, &auth, auth.user.email, auth.user.password))
-	{
-		Serial.println("Signup OK");
-		signupOK = true;
-	}
-	else
-	{
-		Serial.printf("%s\n", config.signer.signupError.message.c_str());
-	}
+	// if (Firebase.signUp(&config, &auth, auth.user.email, auth.user.password))
+	// {
+	// 	Serial.println("Signup OK");
+	// 	signupOK = true;
+	// }
+	// else
+	// {
+	// 	Serial.printf("%s\n", config.signer.signupError.message.c_str());
+	// }
 	/* Assign the RTDB URL (required) */
 
 	Firebase.reconnectWiFi(true);

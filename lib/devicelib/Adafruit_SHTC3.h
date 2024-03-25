@@ -95,7 +95,7 @@ public:
   Adafruit_SHTC3(void);
   ~Adafruit_SHTC3(void);
 
-  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl);
+  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolean performReset);
   uint16_t readID(void);
   void reset(void);
   void sleep(bool sleepmode);

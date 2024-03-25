@@ -55,7 +55,7 @@ Adafruit_SHTC3::~Adafruit_SHTC3(void) {
  *
  * @return True if initialisation was successful, otherwise False.
  */
-bool Adafruit_SHTC3::begin(TwoWire *theWire, uint8_t sda, uint8_t scl) {
+bool Adafruit_SHTC3::begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolean performReset) {
 	if (i2c_dev) {
 		delete i2c_dev; // remove old interface
 	}
@@ -65,14 +65,17 @@ bool Adafruit_SHTC3::begin(TwoWire *theWire, uint8_t sda, uint8_t scl) {
 	if (!i2c_dev->begin(false, sda, scl)) {
 		return false;
 	}
-
-	reset();
+	if(performReset) {
+		reset();
+	}
 	sleep(false);
 
 	// read the ID
-	if ((readID() & 0x083F) != 0x807) {
-		return false;
-	}
+	// uint16_t readId = readID() & 0x083F;
+	// if (!((readId == 0x807) || (readId == 0x2D) || (readId == 0x82E))) {
+	// 	Serial.println(readId, HEX);
+	// 	return false;
+	// }
 	humidity_sensor = new Adafruit_SHTC3_Humidity(this);
 	temp_sensor = new Adafruit_SHTC3_Temp(this);
 	return true;

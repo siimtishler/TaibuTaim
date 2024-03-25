@@ -8,11 +8,13 @@ typedef struct{
 } gauge_measurements_t;
 
 boolean initGauge();
+boolean powerOnGauge();
+void gaugePowerSaverEnable(boolean);
 
 float getCellVoltage();
 float getPercentage();
 float getChgRate();
 
 void printGaugeMeasurements(gauge_measurements_t* );
-gauge_measurements_t getGaugeData();
+gauge_measurements_t getGaugeMeasurements();
 void gaugeTask(gauge_measurements_t*);

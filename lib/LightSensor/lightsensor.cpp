@@ -2,7 +2,7 @@
 #include "Adafruit_VEML7700.h"
 #include "timeutils.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define LIGHT_SENSOR_TIMEOUT SEC_TO_MS(2)
@@ -35,6 +35,33 @@ boolean initLightSensor(){
     return false;
 }
 
+void lightSensorPowerSaverEnable(boolean enable) {
+
+    if(enable) {
+        if(!lightsensor.powerSaveEnabled()){
+            DBGL("Enabling power saver");
+            lightsensor.enable(false);
+            lightsensor.setPowerSaveMode(VEML7700_POWERSAVE_MODE4);
+            lightsensor.enable(true);
+            return;
+        }
+        DBGL("Light sensor power saver already on");
+        return;
+    }
+    else {
+        if(lightsensor.powerSaveEnabled()){
+            DBGL("Disabling power saver");
+            lightsensor.enable(false);
+            lightsensor.powerSaveEnable(false);
+            lightsensor.enable(true);
+            return;
+        }
+        DBGL("Light sensor power saver already off");
+        return;
+    }
+
+}
+
 void printLightMeasurements(light_sens_measurements_t* measurements){
     DBG("Lux: ");
     DBGL(measurements->lux);
@@ -44,7 +71,7 @@ void printLightMeasurements(light_sens_measurements_t* measurements){
     DBGL(measurements->ambient);
 }
 
-light_sens_measurements_t getLightData() {
+light_sens_measurements_t getLightMeasurements() {
     light_sens_measurements_t measurements = {0};
 
     measurements.lux = getLux();

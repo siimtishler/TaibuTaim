@@ -1,7 +1,7 @@
 #include "humiditysensor.h"
 #include "Adafruit_SHTC3.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define HUMIDITY_SDA_PIN        6
@@ -10,16 +10,45 @@
 Adafruit_SHTC3 humiditysensor = Adafruit_SHTC3();
 sensors_event_t humidity, temp;
 
+RTC_DATA_ATTR boolean sleeping = false;
+
 boolean initHumiditySensor() {
 
     for (int i = 0; i < 10; i++)
     {
-        if(humiditysensor.begin(&Wire, HUMIDITY_SDA_PIN, HUMIDITY_SCL_PIN)) {
-            DBGL("Moisture sensor init success");
+        if(humiditysensor.begin(&Wire, HUMIDITY_SDA_PIN, HUMIDITY_SCL_PIN, false)) {
+            DBGL("Humidity sensor init success");
             delay(10);
             return true;
         }
     }
+    return false;
+}   
+
+void humiditySensorSleepEnable(boolean enable) {
+    humiditysensor.sleep(enable);
+    // if(!sleeping && enable) {
+    //     humiditysensor.sleep(enable);
+    //     sleeping = true;
+    // }
+    // else if(sleeping && !enable) {
+    //     humiditysensor.sleep(enable);
+    //     sleeping = false;
+    // }
+}
+
+boolean powerOnHumiditySensor() {
+
+    for (int i = 0; i < 10; i++)
+    {
+        if(humiditysensor.begin(&Wire, HUMIDITY_SDA_PIN, HUMIDITY_SCL_PIN, true)) {
+            DBGL("Humidity sensor power on success");
+            // humiditysensor.lowPowerMode(true);
+            delay(10);
+            return true;
+        }
+    }
+    DBGL("Moisture sensor power on failed");
     return false;
 }   
 
@@ -31,7 +60,7 @@ void printHumidityAndTemperatureMeasurements(humidity_measurements_t* measuremen
 }
 
 
-humidity_measurements_t getHumidityAndTemperatureData() {
+humidity_measurements_t getHumidityAndTemperatureMeasurements() {
     humidity_measurements_t measurements = {0}; 
 
     measureHumidityAndTemp();
@@ -40,7 +69,7 @@ humidity_measurements_t getHumidityAndTemperatureData() {
     measurements.temperature = getLastMeasuredTemperature();
 
 #ifdef DEBUG
-    printHumidityAndTemperatureMeasurements(&measurements);
+    // printHumidityAndTemperatureMeasurements(&measurements);
 #endif
 
     return measurements;

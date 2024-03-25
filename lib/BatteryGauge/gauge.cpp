@@ -2,7 +2,7 @@
 #include "gauge.h"
 #include "timeutils.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define GAUGE_TIMEOUT       SEC_TO_MS(5)
@@ -12,16 +12,25 @@
 
 Adafruit_MAX17048 lipo;
 
-boolean initGauge(){
-    if(lipo.begin(&Wire, LIPO_SDA_PIN, LIPO_SCL_PIN)){
-        DBGL("Lipo inited");
-        // DBG("ID ");
-        // DBGL(lipo.getChipID());
-        // DBG("IC Version");
-        // DBGL(lipo.getICversion());
+boolean powerOnGauge() {
+    if(lipo.begin(&Wire, LIPO_SDA_PIN, LIPO_SCL_PIN, true)){
+        DBGL("Lipo Power reset, I2C init");
         return true;
     }
     return false;
+}
+
+boolean initGauge() {
+    if(lipo.begin(&Wire, LIPO_SDA_PIN, LIPO_SCL_PIN, false)){
+        DBGL("Lipo I2C inited");
+        return true;
+    }
+    return false;
+}
+
+void gaugePowerSaverEnable(bool enable) {
+    lipo.enableSleep(enable);
+    lipo.sleep(enable);
 }
 
 float getCellVoltage (){
@@ -45,7 +54,7 @@ void printGaugeMeasurements(gauge_measurements_t* measurements){
     DBG(measurements->chg_rate);DBGL("%");
 }
 
-gauge_measurements_t getGaugeData() {
+gauge_measurements_t getGaugeMeasurements() {
     gauge_measurements_t measurements = {0};
 
     measurements.percentage = getPercentage();

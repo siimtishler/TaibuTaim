@@ -20,6 +20,6 @@ uint16_t getSoilMeasurement() {
     }
 
     uint16_t avg_measurement = measurement / measurement_cycles;
-    DBGL(avg_measurement);
+    DBG("SOIL MOISTURE ");DBGL(avg_measurement);
     return avg_measurement;
 }

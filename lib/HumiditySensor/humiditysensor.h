@@ -8,8 +8,10 @@ typedef struct{
 
 
 boolean initHumiditySensor();
+boolean powerOnHumiditySensor();
+void humiditySensorSleepEnable(boolean);
 
 float getLastMeasuredTemperature();
 float getLastMeasuredHumidity();
 void measureHumidityAndTemp();
-humidity_measurements_t getHumidityAndTemperatureData();
+humidity_measurements_t getHumidityAndTemperatureMeasurements();

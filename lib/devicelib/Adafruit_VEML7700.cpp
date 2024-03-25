@@ -71,14 +71,19 @@ bool Adafruit_VEML7700::begin(TwoWire *theWire, uint8_t sda, uint8_t scl)
 	PowerSave_Enable = new Adafruit_I2CRegisterBits(Power_Saving, 1, 0);
 	PowerSave_Mode = new Adafruit_I2CRegisterBits(Power_Saving, 2, 1);
 
-	enable(false);
-	interruptEnable(false);
-	setPersistence(VEML7700_PERS_1);
-	setGain(VEML7700_GAIN_1_8);
-	setIntegrationTime(VEML7700_IT_100MS);
-	powerSaveEnable(false);
-	enable(true);
 
+	if(!enabled()) {
+		Serial.println("Enabling light sensor");
+		enable(false);
+		interruptEnable(false);
+		setPersistence(VEML7700_PERS_1);
+		setGain(VEML7700_GAIN_1_8);
+		setIntegrationTime(VEML7700_IT_100MS);
+		setPowerSaveMode(VEML7700_POWERSAVE_MODE4);
+		powerSaveEnable(true);
+		enable(true);
+	}
+	
 	lastRead = millis();
 
 	return true;

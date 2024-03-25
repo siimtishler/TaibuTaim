@@ -13,7 +13,7 @@
 
 #include "timeutils.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 
@@ -29,23 +29,60 @@ gauge_measurements_t gauge_measurements = {0};
 
 #include "Wire.h"
 
+RTC_DATA_ATTR int bootcnt = 0;
+
+RTC_DATA_ATTR boolean gaugePowerOn = false;
+RTC_DATA_ATTR boolean humiditySensPowerOn = false;
+RTC_DATA_ATTR boolean lightSensPowerOn = false;
+
+void powerOnDevices() {
+		
+	if(!gaugePowerOn) { 
+		powerOnGauge();	
+		DBGL("Powering gauge");
+		gaugePowerOn = true;
+	}
+
+	if(!humiditySensPowerOn) { 
+		powerOnHumiditySensor();	
+		DBGL("Powering humidity sensor");
+		humiditySensPowerOn = true;
+	}
+
+	if(!lightSensPowerOn) { 
+		initLightSensor();
+		DBGL("Powering light sensor");
+		lightSensPowerOn = true;
+	}
+}
+
 void setup()
 {
 
 	Serial.begin(115200);
 	DBGL("*******/TERE TAIBUTAIM\\*******");
-	delay(10);
 
-	// initSoilSensor();
-	
-	
-	// initBleSerial();
+
+	bootcnt++;
+	Serial.println("Boot number: " + String(bootcnt));
+
+	powerOnDevices();
+
 	ConnectWifi();
 	ConnectFirebase();
+
+	sensorsTask();
+
+	DisconnectWifi();
+	DBGL("Sleeping");
+	esp_deep_sleep(MIN_TO_US(5));
+
 }
+
+
 void loop()
 {
-	sensorsTask();
+	
 	// sensors_event_t humidity, temp;
 	// shtc3.getEvent(&humidity, &temp);
 	// DBG("Temp: "); DBGL(temp.temperature);
