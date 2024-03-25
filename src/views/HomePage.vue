@@ -25,7 +25,7 @@
         </div>
 
 
-        <b-card title="Card Title"
+        <!-- <b-card title="Card Title"
             img-src="https://demos.creative-tim.com/argon-dashboard-pro-bs4/assets/img/theme/img-1-1000x600.jpg"
             img-alt="Image" img-top tag="article" style="max-width: 20rem;" class="mb-2">
             <b-card-text>
@@ -34,7 +34,7 @@
             </b-card-text>
 
             <small class="text-muted">Last updated 3 mins ago</small>
-        </b-card>
+        </b-card> -->
     </page>
 
 

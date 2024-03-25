@@ -1,4 +1,5 @@
 <template>
+    <div v-if="errMsg"> {{ errMsg }}</div>
     <div class="container py-5 my-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
             <div class="col col-xl-10">
@@ -31,14 +32,19 @@
                                     
                                     
                                     <div class="button-container mb-4">
-                                        <button class="btn btn-lg btn-block" type="button" style="background-color: #D2DECB;">Logi sisse</button>
+                                        <button 
+                                            class="btn btn-lg btn-block"
+                                            type="button" 
+                                            style="background-color: #D2DECB;"
+                                            @click="signIn">Logi sisse</button>
                                     </div>
                                     <div class="button-container">
                                         <button class="btn btn-lg btn-block" type="button" style="background-color: #DEA49C;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google me-2" viewBox="1 0 14 19">
-                                            <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"/>
-                                            </svg>
-                                            Google
+                                            <i class="pi pi-google" style="width:8px; height:8px; margin-right: 0.5rem;"></i>
+                                            <!-- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google me-2" viewBox="1 0 14 19">
+                                                <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z"/>
+                                            </svg> -->
+                                            oogle
                                         </button>
                                     </div>
                                     <div class="d-flex mt-3 pt-3">
@@ -68,18 +74,47 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const router = useRouter();
 const email = ref('');
 const password = ref('');
 const passwordVisible = ref(false);
+const errMsg = ref('');
+
 
 // Methods
 const togglePasswordVisibility = () => {
     passwordVisible.value = !passwordVisible.value;
 };
 
+const signIn = () => {
+    signInWithEmailAndPassword(getAuth(), email.value, password.value)
+        .then((data) => {
+            console.log("Signed in");
+            router.push('/feed');
+        })
+        .catch((error) => {
+            console.log(error.code);
+            switch(error.code){
+                case "auth/invalid-email":
+                    errMsg.value = "Invalid email";
+                    break;
+                case "auth/user-not-found":
+                    errMsg.value = "User not found";
+                    break;
+                case "auth/wrong-password":
+                    errMsg.value = "Wrong password";
+                    break;
+                case "auth/missing-password":
+                    errMsg.value = "Password field empty";
+                    break;
+                default:
+                    errMsg.value = "Email or password was incorrect";
+                    break;
+            }
+        });
+}
 
 const signInWithGoogle = () => {
 

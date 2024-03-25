@@ -5,6 +5,8 @@ import RegisterPage from './views/RegisterPage.vue';
 import FeedPage from './views/FeedPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [
@@ -19,6 +21,9 @@ const router = createRouter({
         {
             path: '/feed',
             component: FeedPage,
+            meta: {
+                requiresAuth: true,
+            }
         },
         {
             path: '/signin',
@@ -30,6 +35,32 @@ const router = createRouter({
         }
         
     ]
+});
+
+const getCurrentUser = () => {
+    return new Promise((resolve, reject) => {
+        const removeListener = onAuthStateChanged(
+            getAuth(),
+            (user) => {
+                removeListener();
+                resolve(user);
+            },
+            reject
+        )
+    });
+};
+
+router.beforeEach(async (to, from, next) => {
+    if(to.matched.some((record) => record.meta.requiresAuth)){
+        if(await getCurrentUser()) {
+            next();
+        } else {
+            alert("You do not have access!");
+            next("/");
+        }
+    } else {
+        next();
+    }
 });
 
 export default router;

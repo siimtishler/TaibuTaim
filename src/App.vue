@@ -1,5 +1,5 @@
 <template>
-	<nav-bar v-if="!loggedIn"></nav-bar>
+	<nav-bar v-if="!isLoggedIn"></nav-bar>
 	<nav-bar-after-login v-else></nav-bar-after-login>
 
 	<!-- <button @click.prevent="loggedIn = !loggedIn">Log in</button> -->
@@ -12,11 +12,22 @@
 <script setup>
 import NavBar from './components/NavBar.vue';
 import NavBarAfterLogin from './components/NavBarAfterLogin.vue';
-import { ref, reactive, onBeforeMount } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
-const loggedIn = ref(false);
+const isLoggedIn = ref(false);
 
-
+let auth;
+onMounted(() => {
+	auth = getAuth();
+	onAuthStateChanged(auth, (user) => {
+		if (user) {
+			isLoggedIn.value = true;
+		} else {
+			isLoggedIn.value = false;
+		}
+	})
+})
 
 
 </script>

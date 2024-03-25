@@ -1,4 +1,5 @@
 <template>
+    <div v-if="errMsg" class="error">{{ errMsg }}</div>
     <div class="container py-5 my-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
             <div class="col col-xl-10">
@@ -21,7 +22,7 @@
                                     </div>
                                     <div class="form-outline mb-4 position-relative">
                                         <input 
-                                            placeholder="Salasõna" 
+                                            placeholder="Parool" 
                                             :type="passwordVisible ? 'text' : 'password'"
                                             id="passwordForm" 
                                             class="form-control form-control-lg "
@@ -36,7 +37,7 @@
 
                                     <div class="form-outline mb-4">
                                         <input 
-                                            placeholder="Korda salasõna" 
+                                            placeholder="Korda parooli" 
                                             :type="passwordVisible ? 'text' : 'password'"
                                             id="confirmPasswordForm" 
                                             class="form-control form-control-lg "
@@ -47,7 +48,8 @@
                                     <div class="button-container mb-4">
                                         <button 
                                             class="btn btn-lg btn-block" 
-                                            type="button" style="background-color: #CADBDE;">
+                                            type="button" style="background-color: #CADBDE;"
+                                            @click="register">
                                             Registreeri
                                         </button>
                                     </div>
@@ -85,7 +87,7 @@ const router = useRouter();
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('')
-
+const errMsg = ref('');
 const passwordVisible = ref(false);
 
 // Methods
@@ -94,6 +96,10 @@ const togglePasswordVisibility = () => {
 };
 
 const register = () => {
+    if(password.value !== confirmPassword.value) {
+        errMsg.value = "Sisestatud paroolid peavad olema samad"
+        return;
+    }
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
         .then((data) => {
             console.log("Registered");
@@ -101,7 +107,26 @@ const register = () => {
         })
         .catch((error) => {
             console.log(error.code);
-            alert(error.message);
+            switch(error.code){
+                case "auth/invalid-email":
+                    errMsg.value = "Valesti sisestatud E-mail";
+                    break;
+                case "auth/email-already-in-use":
+                    errMsg.value = "E-mail juba kasutuses";
+                    break;
+                case "auth/wrong-password":
+                    errMsg.value = "Wrong password";
+                    break;
+                case "auth/missing-password":
+                    errMsg.value = "Parooli väli tühi";
+                    break;
+                case "auth/weak-password":
+                    errMsg.value = "Parool vähemalt 6 tähemärki";
+                    break;
+                default:
+                    errMsg.value = "Email or password was incorrect";
+                    break;
+            }
         });
 };
 

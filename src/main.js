@@ -7,7 +7,7 @@ import 'primeicons/primeicons.css'
 import 'primevue/resources/primevue.min.css'; // Import PrimeVue core CSS
 import 'firebase/auth'
 import 'firebase/database'
-import '../node_modules/bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import router from './routes.js';
 
 const fbApp = initializeApp(fireBaseAPI)
