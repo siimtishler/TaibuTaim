@@ -1,6 +1,6 @@
 #include "soilsensor.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define SOIL_SENSOR_PIN         4

@@ -7,7 +7,6 @@
 
 #include "sensorstask.h"
 
-
 #include "bleserial.h"
 #include "RTDB.h"
 
@@ -62,21 +61,20 @@ void setup()
 	Serial.begin(115200);
 	DBGL("*******/TERE TAIBUTAIM\\*******");
 
-
 	bootcnt++;
 	Serial.println("Boot number: " + String(bootcnt));
 
 	powerOnDevices();
 
-	ConnectWifi();
-	ConnectFirebase();
+	// ConnectWifi();
+	// ConnectFirebase();
 
 	sensorsTask();
 
-	DisconnectWifi();
+	// DisconnectWifi();
 	DBGL("Sleeping");
-	esp_deep_sleep(MIN_TO_US(5));
 
+	esp_deep_sleep(SEC_TO_US(5));
 }
 
 

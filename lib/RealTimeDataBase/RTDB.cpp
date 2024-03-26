@@ -9,7 +9,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 // These are defined in ignore/API.h
@@ -32,7 +32,7 @@ bool signupOK = false;
 static boolean IsFireBaseReady()
 {
 	static uint32_t sendDataPrev = 0;
-	while (!(Firebase.ready() && signupOK && (millis() - sendDataPrev > 200 || sendDataPrev == 0)))
+	while (!(Firebase.ready() && signupOK && (millis() - sendDataPrev > 100 || sendDataPrev == 0)))
 	{
 		sendDataPrev = millis();
 	}
@@ -71,7 +71,7 @@ static bool PushBatteryData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.pushJSONAsync(&fbdo, "battery/", &fbjson))
+		if (Firebase.RTDB.setJSONAsync(&fbdo, "battery/", &fbjson))
 		{
 			String str;
 			fbjson.toString(str,true);
@@ -171,10 +171,45 @@ static void SendWiFiStatus()
 	}
 }
 
+RTC_DATA_ATTR boolean wifi_config_saved = false;
+RTC_DATA_ATTR char clocalIP[16];
+RTC_DATA_ATTR char cgatewayIP[16];
+RTC_DATA_ATTR char csubnetIP[16];
+RTC_DATA_ATTR char cdnsIP[16];
+
+const uint8_t* convertCharToUint8Array(const char* chr) {
+	static uint8_t octets[4]; // Static array to hold the octets
+    
+    // Use sscanf to parse the IP address string
+    sscanf(chr, "%hhu.%hhu.%hhu.%hhu", &octets[0], &octets[1], &octets[2], &octets[3]);
+
+    return octets; // Return the pointer to the array
+}
+
+
+// BSSID 98:9D:5D:2A:85:1D
 // Creates WiFi connection
+RTC_DATA_ATTR char tere[10] = {0};
 void ConnectWifi()
 {
-	static int i = 0;
+	WiFi.persistent(false);
+
+	if(wifi_config_saved) {
+		IPAddress local = IPAddress(convertCharToUint8Array(clocalIP));
+		IPAddress gateway = IPAddress(convertCharToUint8Array(cgatewayIP));
+		IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
+		IPAddress dns = IPAddress(convertCharToUint8Array(cdnsIP));
+
+
+		WiFi.config(local, gateway, subnet, dns);
+
+		DBGL("Using saved config");
+		DBG("Local: ");DBGL(local.toString());
+		DBG("Gateway: ");DBGL(gateway.toString());
+		DBG("Subent: ");DBGL(subnet.toString());
+		DBG("DNS: ");DBGL(dns.toString());
+	}
+	WiFi.mode(WIFI_STA);
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 	DBGL("Connecting to Wi-Fi");
 
@@ -182,17 +217,27 @@ void ConnectWifi()
 
 	while (WiFi.status() != WL_CONNECTED && millis() - startMillis < 5000)
 	{
-		DBG(".");
-		delay(50);
+		// DBG(".");
+		// delay(100);
 	}
-
+	
 	if (WiFi.status() == WL_CONNECTED)
 	{
+		if(!wifi_config_saved) {
+			strcpy(clocalIP, WiFi.localIP().toString().c_str());
+			strcpy(cdnsIP, WiFi.dnsIP().toString().c_str());
+			strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
+			strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
+
+			DBGL("Saved WiFi config:");
+			DBGL(clocalIP);
+			DBGL(cdnsIP);
+			DBGL(cgatewayIP);
+			DBGL(csubnetIP);
+
+			wifi_config_saved = true;
+		}
 		wifi_connected = true;
-		DBGL();
-		DBG("Connected with IP: ");
-		DBGL(WiFi.localIP());
-		DBGL();
 	}
 	else
 	{
@@ -230,7 +275,7 @@ void ConnectFirebase()
 	// }
 	/* Assign the RTDB URL (required) */
 
-	Firebase.reconnectWiFi(true);
+	// Firebase.reconnectNetwork(true);
 	fbdo.setResponseSize(4096);
 
 	/* Assign the callback function for the long running token generation task */
@@ -239,5 +284,5 @@ void ConnectFirebase()
 	signupOK = true;
 
 	Firebase.begin(&config, &auth);
-	Firebase.reconnectWiFi(true);
+	// Firebase.reconnectNetwork(true);
 }

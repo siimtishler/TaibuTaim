@@ -4,6 +4,10 @@
 .vscode/launch.json
 .vscode/ipch
 
+/dist
+
+src/main.js
+
 node_modules/
 
 src/fireBaseAPI.js

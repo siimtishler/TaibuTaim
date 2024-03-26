@@ -295,5 +295,6 @@
     "*.tcc": "cpp",
     "memory": "cpp",
     "random": "cpp"
-  }
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }

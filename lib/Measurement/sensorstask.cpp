@@ -8,7 +8,9 @@
 
 #include "RTDB.h"
 
-// #define DEBUG
+#include "RTDB.h"
+
+#define DEBUG
 #include "SerialDebug.h"
 
 #include "timeutils.h"
@@ -31,6 +33,12 @@ void sensorsTask() {
 
     if(millis() - last_task_ms > SENSORS_TASK_TIMEOUT_MS) {
         
+        uint16_t start = millis();
+        ConnectWifi();
+        uint16_t end = millis();
+        DBG("Time spent connect WiFi: "); DBGL(end-start);
+
+        return;
 
         initSoilSensor();
         soil_measurements = getSoilMeasurement();
@@ -58,11 +66,42 @@ void sensorsTask() {
         }
         wire_swap();
 
-        sendBatteryMeasurements(gauge_measurements);
-        sendHumidityMeasurements(humidity_temperature_measurements);
-        sendLightSensorMeasurements(light_measurements);
-        sendSoilMeasurements(soil_measurements);
+        uint16_t startall = millis();
 
+        start = millis();
+        ConnectWifi();
+        end = millis();
+        DBG("Time spent connect WiFi: "); DBGL(end-start);
+
+        start = millis();
+        ConnectFirebase();
+        end = millis();
+        DBG("Time spent connect FireBase: "); DBGL(end-start);
+        
+
+        start = millis();
+        sendHumidityMeasurements(humidity_temperature_measurements);
+        end = millis();
+        DBG("Time spent humidity: "); DBGL(end-start);
+
+        start = millis();
+        sendBatteryMeasurements(gauge_measurements);
+        end = millis();
+        DBG("Time spent batt: "); DBGL(end-start);
+
+        start = millis();
+        sendLightSensorMeasurements(light_measurements);
+        end = millis();
+        DBG("Time spent light: "); DBGL(end-start);
+
+        // sendSoilMeasurements(soil_measurements);
+        start = millis();        
+        DisconnectWifi();
+        end = millis();
+        DBG("Time spent disconnect: "); DBGL(end-start);
+
+        end = millis();
+        DBG("Time spent for all combined: "); DBGL(end-startall);
         last_task_ms = millis();
     }
 }
