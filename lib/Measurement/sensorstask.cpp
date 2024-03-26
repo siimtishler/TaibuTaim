@@ -22,6 +22,8 @@ static inline void wire_swap() {
     delay(10);
 }
 
+// #define MEASURE_TIME
+
 void sensorsTask() {
     uint32_t last_task_ms = 0;
 
@@ -32,13 +34,9 @@ void sensorsTask() {
     uint16_t soil_measurements = 0;
 
     if(millis() - last_task_ms > SENSORS_TASK_TIMEOUT_MS) {
-        
-        uint16_t start = millis();
-        ConnectWifi();
-        uint16_t end = millis();
-        DBG("Time spent connect WiFi: "); DBGL(end-start);
 
-        return;
+        uint16_t start = 0;
+        uint16_t end = 0;
 
         initSoilSensor();
         soil_measurements = getSoilMeasurement();
@@ -51,7 +49,6 @@ void sensorsTask() {
 
         if(initGauge()) {
             gaugePowerSaverEnable(false);
-            delay(150);
             gauge_measurements = getGaugeMeasurements();
             gaugePowerSaverEnable(true);
         }
@@ -66,6 +63,7 @@ void sensorsTask() {
         }
         wire_swap();
 
+    #ifdef MEASURE_TIME
         uint16_t startall = millis();
 
         start = millis();
@@ -77,7 +75,6 @@ void sensorsTask() {
         ConnectFirebase();
         end = millis();
         DBG("Time spent connect FireBase: "); DBGL(end-start);
-        
 
         start = millis();
         sendHumidityMeasurements(humidity_temperature_measurements);
@@ -94,7 +91,6 @@ void sensorsTask() {
         end = millis();
         DBG("Time spent light: "); DBGL(end-start);
 
-        // sendSoilMeasurements(soil_measurements);
         start = millis();        
         DisconnectWifi();
         end = millis();
@@ -103,5 +99,13 @@ void sensorsTask() {
         end = millis();
         DBG("Time spent for all combined: "); DBGL(end-startall);
         last_task_ms = millis();
+    #else
+        ConnectWifi();
+        ConnectFirebase();
+        sendHumidityMeasurements(humidity_temperature_measurements);
+        sendBatteryMeasurements(gauge_measurements);
+        sendLightSensorMeasurements(light_measurements);
+        DisconnectWifi();
+    #endif
     }
 }

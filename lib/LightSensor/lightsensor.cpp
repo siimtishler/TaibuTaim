@@ -36,7 +36,6 @@ boolean initLightSensor(){
 }
 
 void lightSensorPowerSaverEnable(boolean enable) {
-
     if(enable) {
         if(!lightsensor.powerSaveEnabled()){
             DBGL("Enabling power saver");

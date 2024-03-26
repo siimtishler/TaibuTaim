@@ -9,7 +9,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 // These are defined in ignore/API.h
@@ -71,7 +71,7 @@ static bool PushBatteryData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSONAsync(&fbdo, "battery/", &fbjson))
+		if (Firebase.RTDB.pushJSON(&fbdo, "battery/", &fbjson))
 		{
 			String str;
 			fbjson.toString(str,true);
@@ -87,7 +87,7 @@ static bool PushHumidityData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSONAsync(&fbdo, "humidity/", &fbjson))
+		if (Firebase.RTDB.setJSON(&fbdo, "humidity/", &fbjson))
 		{
 			String str;
 			fbjson.toString(str,true);
@@ -103,7 +103,7 @@ static bool PushLightData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSONAsync(&fbdo, "light/", &fbjson))
+		if (Firebase.RTDB.setJSON(&fbdo, "light/", &fbjson))
 		{
 			String str;
 			fbjson.toString(str,true);
@@ -113,6 +113,19 @@ static bool PushLightData(FirebaseJson fbjson)
 		DBGL(fbdo.errorReason());
 	}
 	return false;
+}
+
+void send(light_sens_measurements_t val, const char* path) { 
+	FirebaseJson fbj;
+	fbj.add("A", val.ambient);
+	fbj.add("L", val.lux);
+	fbj.add("W", val.white);
+	if (IsFireBaseReady())
+	{
+		if (Firebase.RTDB.setJSON(&fbdo, path, &fbj)){
+			DBGL("Sent");
+		}
+	}
 }
 
 static bool PushSoilData(uint16_t soilMoisture)
@@ -176,6 +189,9 @@ RTC_DATA_ATTR char clocalIP[16];
 RTC_DATA_ATTR char cgatewayIP[16];
 RTC_DATA_ATTR char csubnetIP[16];
 RTC_DATA_ATTR char cdnsIP[16];
+RTC_DATA_ATTR uint8_t channel;
+RTC_DATA_ATTR uint8_t bssid[6];
+
 
 const uint8_t* convertCharToUint8Array(const char* chr) {
 	static uint8_t octets[4]; // Static array to hold the octets
@@ -186,9 +202,6 @@ const uint8_t* convertCharToUint8Array(const char* chr) {
     return octets; // Return the pointer to the array
 }
 
-
-// BSSID 98:9D:5D:2A:85:1D
-// Creates WiFi connection
 RTC_DATA_ATTR char tere[10] = {0};
 void ConnectWifi()
 {
@@ -200,17 +213,21 @@ void ConnectWifi()
 		IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
 		IPAddress dns = IPAddress(convertCharToUint8Array(cdnsIP));
 
-
 		WiFi.config(local, gateway, subnet, dns);
-
-		DBGL("Using saved config");
-		DBG("Local: ");DBGL(local.toString());
-		DBG("Gateway: ");DBGL(gateway.toString());
-		DBG("Subent: ");DBGL(subnet.toString());
-		DBG("DNS: ");DBGL(dns.toString());
+		// DBGL("Using saved config");
+		// DBG("Local: ");DBGL(local.toString());
+		// DBG("Gateway: ");DBGL(gateway.toString());
+		// DBG("Subent: ");DBGL(subnet.toString());
+		// DBG("DNS: ");DBGL(dns.toString());
+		WiFi.mode(WIFI_STA);
+		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 	}
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+	else {
+		WiFi.mode(WIFI_STA);
+		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+	}
+
+	
 	DBGL("Connecting to Wi-Fi");
 
 	unsigned long startMillis = millis();
@@ -229,11 +246,28 @@ void ConnectWifi()
 			strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
 			strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
 
+
+			uint8_t* pbssid = WiFi.BSSID();
+			if(pbssid != nullptr){
+				memcpy(bssid, pbssid, 6);
+			}
+			channel = (uint8_t)WiFi.channel();
+
+			for (size_t i = 0; i < 6; i++)
+			{
+				Serial.print(bssid[i], HEX);
+				DBG(" ");
+			}
+			DBGL("");
+
+			DBG("Channel: "); DBGL(channel);
+			
+
 			DBGL("Saved WiFi config:");
-			DBGL(clocalIP);
-			DBGL(cdnsIP);
-			DBGL(cgatewayIP);
-			DBGL(csubnetIP);
+			// DBGL(clocalIP);
+			// DBGL(cdnsIP);
+			// DBGL(cgatewayIP);
+			// DBGL(csubnetIP);
 
 			wifi_config_saved = true;
 		}

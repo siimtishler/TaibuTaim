@@ -69,17 +69,28 @@ void setup()
 	// ConnectWifi();
 	// ConnectFirebase();
 
-	sensorsTask();
 
-	// DisconnectWifi();
+	sensorsTask();
+	// if(initLightSensor()) {
+	// 	lightSensorPowerSaverEnable(false);
+	// 	light_measurements = getLightMeasurements();
+	// 	lightSensorPowerSaverEnable(true);
+	// }
+	// send(getLightMeasurements(), "sitt/");
+	
+
 	DBGL("Sleeping");
 
-	esp_deep_sleep(SEC_TO_US(5));
+	esp_deep_sleep(MIN_TO_US(5));
 }
 
+int i = 0;
 
 void loop()
 {
+	
+	i++;
+	delay(5000);
 	
 	// sensors_event_t humidity, temp;
 	// shtc3.getEvent(&humidity, &temp);

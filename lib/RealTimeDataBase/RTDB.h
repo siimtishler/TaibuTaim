@@ -15,6 +15,6 @@ void sendLightSensorMeasurements(light_sens_measurements_t measurements);
 void sendHumidityMeasurements(humidity_measurements_t measurements);
 void sendSoilMeasurements(uint16_t measurements);
 
-void SendDeviceMeasurements();
+void send(light_sens_measurements_t, const char* path);
 
 extern boolean wifi_connected;
