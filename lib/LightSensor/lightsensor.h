@@ -8,6 +8,7 @@ typedef struct{
 } light_sens_measurements_t;
 
 boolean initLightSensor();
+boolean powerOnLightSensor();
 
 void lightSensorPowerSaverEnable(boolean);
 

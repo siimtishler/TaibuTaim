@@ -73,7 +73,7 @@ bool Adafruit_SHTC3::begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolean p
 	// read the ID
 	// uint16_t readId = readID() & 0x083F;
 	// if (!((readId == 0x807) || (readId == 0x2D) || (readId == 0x82E))) {
-	// 	Serial.println(readId, HEX);
+	// Serial.print("STHC3 ID:0x");Serial.println(readId, HEX);
 	// 	return false;
 	// }
 	humidity_sensor = new Adafruit_SHTC3_Humidity(this);

@@ -82,7 +82,7 @@ typedef enum {
 class Adafruit_VEML7700 {
 public:
   Adafruit_VEML7700();
-  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl);
+  bool begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolean firstInit);
 
   void enable(bool enable);
   bool enabled(void);

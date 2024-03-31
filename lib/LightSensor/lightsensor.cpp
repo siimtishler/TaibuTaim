@@ -2,7 +2,7 @@
 #include "Adafruit_VEML7700.h"
 #include "timeutils.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 #define LIGHT_SENSOR_TIMEOUT SEC_TO_MS(2)
@@ -27,9 +27,26 @@ uint16_t getAmbient() {
 boolean initLightSensor(){
     for (int i = 0; i < 10; i++)
     {
-        if(lightsensor.begin(&Wire, LIGHT_SDA_PIN, LIGHT_SCL_PIN)) {
+        if(lightsensor.begin(&Wire, LIGHT_SDA_PIN, LIGHT_SCL_PIN, false)) {
             DBGL("Light sensor inited");
             return true;
+        }
+        else {
+            DBGL("Light sensor init failed");
+        }
+    }
+    return false;
+}
+
+boolean powerOnLightSensor(){
+    for (int i = 0; i < 10; i++)
+    {
+        if(lightsensor.begin(&Wire, LIGHT_SDA_PIN, LIGHT_SCL_PIN, true)) {
+            DBGL("Light sensor inited");
+            return true;
+        }
+        else {
+            DBG("Light sensor init failed");
         }
     }
     return false;

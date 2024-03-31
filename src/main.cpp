@@ -12,7 +12,7 @@
 
 #include "timeutils.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 
@@ -35,42 +35,53 @@ RTC_DATA_ATTR boolean humiditySensPowerOn = false;
 RTC_DATA_ATTR boolean lightSensPowerOn = false;
 
 void powerOnDevices() {
-		
+	
+	
 	if(!gaugePowerOn) { 
-		powerOnGauge();	
-		DBGL("Powering gauge");
-		gaugePowerOn = true;
-	}
-
-	if(!humiditySensPowerOn) { 
-		powerOnHumiditySensor();	
-		DBGL("Powering humidity sensor");
-		humiditySensPowerOn = true;
+		if(powerOnGauge()){
+			// DBGL("Powering gauge");
+			gaugePowerOn = true;
+		}	
 	}
 
 	if(!lightSensPowerOn) { 
-		initLightSensor();
-		DBGL("Powering light sensor");
-		lightSensPowerOn = true;
+		if(powerOnLightSensor()){
+			// DBGL("Powering light sensor");
+			lightSensPowerOn = true;
+		}
+	}
+
+	if(!humiditySensPowerOn) { 
+		// Have to stop I2C interface for rewiring SDA and SCL for humidity sens
+		Wire.end();
+		delay(1);
+		if(powerOnHumiditySensor()) {
+			// DBGL("Powering humidity sensor");
+			humiditySensPowerOn = true;
+		}	
 	}
 }
 
 void setup()
 {
 
-	Serial.begin(115200);
+	Serial.begin(921600);
 	DBGL("*******/TERE TAIBUTAIM\\*******");
-
+	DBGL("");
+	DBGL("-----------------");
 	bootcnt++;
 	Serial.println("Boot number: " + String(bootcnt));
 
-	powerOnDevices();
+	// powerOnDevices();
+
+	// initSoilSensor();
+
+	// sensorsTask();
+
 
 	// ConnectWifi();
 	// ConnectFirebase();
 
-
-	sensorsTask();
 	// if(initLightSensor()) {
 	// 	lightSensorPowerSaverEnable(false);
 	// 	light_measurements = getLightMeasurements();
@@ -78,10 +89,10 @@ void setup()
 	// }
 	// send(getLightMeasurements(), "sitt/");
 	
-
+	initBleSerial();
 	DBGL("Sleeping");
-
-	esp_deep_sleep(MIN_TO_US(5));
+	DBG("-----------------");
+	// esp_deep_sleep(SEC_TO_US(10));
 }
 
 int i = 0;
@@ -89,8 +100,9 @@ int i = 0;
 void loop()
 {
 	
-	i++;
-	delay(5000);
+	bleSerialTask();
+
+	// delay(1000);
 	
 	// sensors_event_t humidity, temp;
 	// shtc3.getEvent(&humidity, &temp);
@@ -127,7 +139,6 @@ void loop()
 	// sendLightSensorStatus(light_measurements);
 
 	// sendBatteryStatus(gauge_measurements);
-	// bleSerialTask();
 }
 
 // #include "Adafruit_VEML7700.h"

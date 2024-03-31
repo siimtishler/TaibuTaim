@@ -133,7 +133,7 @@ static bool PushSoilData(uint16_t soilMoisture)
 	if (IsFireBaseReady())
 	{
 		String str_soilMoisture = String(soilMoisture);
-		if (Firebase.RTDB.setStringAsync(&fbdo, "soil_moisture/", str_soilMoisture.c_str()))
+		if (Firebase.RTDB.setInt(&fbdo, "soil_moisture/", soilMoisture))
 		{
 			return true;
 		}
@@ -246,7 +246,7 @@ void ConnectWifi()
 			strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
 			strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
 
-
+			/* ---- Might not be needed ---- */
 			uint8_t* pbssid = WiFi.BSSID();
 			if(pbssid != nullptr){
 				memcpy(bssid, pbssid, 6);
@@ -259,9 +259,8 @@ void ConnectWifi()
 				DBG(" ");
 			}
 			DBGL("");
-
 			DBG("Channel: "); DBGL(channel);
-			
+			/* ------------------------------ */
 
 			DBGL("Saved WiFi config:");
 			// DBGL(clocalIP);

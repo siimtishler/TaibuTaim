@@ -39,12 +39,13 @@ Adafruit_VEML7700::Adafruit_VEML7700(void) {}
  *    @param  theWire An optional pointer to an I2C interface
  *    @return True if initialization was successful, otherwise false.
  */
-bool Adafruit_VEML7700::begin(TwoWire *theWire, uint8_t sda, uint8_t scl)
+bool Adafruit_VEML7700::begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolean firstInit)
 {
 	i2c_dev = new Adafruit_I2CDevice(VEML7700_I2CADDR_DEFAULT, theWire);
 
 	if (!i2c_dev->begin(true, sda, scl))
 	{
+		Serial.println("Light sensor i2c begin failed");
 		return false;
 	}
 
@@ -71,18 +72,20 @@ bool Adafruit_VEML7700::begin(TwoWire *theWire, uint8_t sda, uint8_t scl)
 	PowerSave_Enable = new Adafruit_I2CRegisterBits(Power_Saving, 1, 0);
 	PowerSave_Mode = new Adafruit_I2CRegisterBits(Power_Saving, 2, 1);
 
-
-	if(!enabled()) {
-		Serial.println("Enabling light sensor");
-		enable(false);
-		interruptEnable(false);
-		setPersistence(VEML7700_PERS_1);
-		setGain(VEML7700_GAIN_1_8);
-		setIntegrationTime(VEML7700_IT_100MS);
-		setPowerSaveMode(VEML7700_POWERSAVE_MODE4);
-		powerSaveEnable(true);
-		enable(true);
+	if(firstInit) {
+		if(!enabled()) {
+			Serial.println("Enabling light sensor with power saving mode 4");
+			enable(false);
+			interruptEnable(false);
+			setPersistence(VEML7700_PERS_1);
+			setGain(VEML7700_GAIN_1_8);
+			setIntegrationTime(VEML7700_IT_100MS);
+			setPowerSaveMode(VEML7700_POWERSAVE_MODE4);
+			powerSaveEnable(true);
+			enable(true);
+		}
 	}
+	
 	
 	lastRead = millis();
 

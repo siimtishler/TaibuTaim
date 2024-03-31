@@ -1,7 +1,7 @@
 #include "humiditysensor.h"
 #include "Adafruit_SHTC3.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 #define HUMIDITY_SDA_PIN        6
@@ -27,14 +27,6 @@ boolean initHumiditySensor() {
 
 void humiditySensorSleepEnable(boolean enable) {
     humiditysensor.sleep(enable);
-    // if(!sleeping && enable) {
-    //     humiditysensor.sleep(enable);
-    //     sleeping = true;
-    // }
-    // else if(sleeping && !enable) {
-    //     humiditysensor.sleep(enable);
-    //     sleeping = false;
-    // }
 }
 
 boolean powerOnHumiditySensor() {
@@ -69,7 +61,7 @@ humidity_measurements_t getHumidityAndTemperatureMeasurements() {
     measurements.temperature = getLastMeasuredTemperature();
 
 #ifdef DEBUG
-    // printHumidityAndTemperatureMeasurements(&measurements);
+    printHumidityAndTemperatureMeasurements(&measurements);
 #endif
 
     return measurements;

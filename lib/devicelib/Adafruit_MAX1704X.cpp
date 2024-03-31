@@ -73,10 +73,11 @@ bool Adafruit_MAX17048::begin(TwoWire *wire, uint8_t sda, uint8_t scl, boolean p
 		if (!reset()) {
 			return false;
 		}
+		Serial.println("Gauge resetting");
 	}
 	
 
-	enableSleep(false);
+	enableSleep(true);
 	sleep(false);
 
 	return true;

@@ -2,7 +2,7 @@
 #include "gauge.h"
 #include "timeutils.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 #define GAUGE_TIMEOUT       SEC_TO_MS(5)
@@ -28,9 +28,28 @@ boolean initGauge() {
     return false;
 }
 
-void gaugePowerSaverEnable(bool enable) {
-    lipo.enableSleep(enable);
-    lipo.sleep(enable);
+void gaugeHibernate(bool hibernate) {
+
+    if(lipo.isHibernating() && !hibernate) {
+        lipo.wake();
+        DBGL("Not hibernating anymore");
+        return;
+    }
+    else if(!lipo.isHibernating() && hibernate) {
+        lipo.hibernate();
+        DBGL("Now hibernating");
+        return;
+    }
+    else if(!lipo.isHibernating() && !hibernate) {
+        lipo.hibernate();
+        DBGL("Already not hibernating");
+        return;
+    }
+    else if(lipo.isHibernating() && hibernate) {
+        lipo.hibernate();
+        DBGL("Already hibernating");
+        return;
+    }
 }
 
 float getCellVoltage (){

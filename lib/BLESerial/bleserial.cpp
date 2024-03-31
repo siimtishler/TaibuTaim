@@ -1,6 +1,7 @@
 #include "bleserial.h"
 #include "BluetoothSerial.h"
 
+
 BluetoothSerial bleSerial;
 
 void initBleSerial(){

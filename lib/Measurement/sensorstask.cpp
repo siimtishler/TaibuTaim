@@ -19,7 +19,7 @@
 
 static inline void wire_swap() {
     Wire.end();
-    delay(10);
+    delay(1);
 }
 
 // #define MEASURE_TIME
@@ -38,30 +38,32 @@ void sensorsTask() {
         uint16_t start = 0;
         uint16_t end = 0;
 
-        initSoilSensor();
+        // initSoilSensor();
         soil_measurements = getSoilMeasurement();
+        wire_swap();
 
         // Light and gauge sensors are SDA->IO7, SCL->IO6
         if(initLightSensor()) {
             light_measurements = getLightMeasurements();
-            lightSensorPowerSaverEnable(true);
+            // When we first give power, we turn on powersaver
+            // lightSensorPowerSaverEnable(true);
         }
 
         if(initGauge()) {
-            gaugePowerSaverEnable(false);
+            // gaugeHibernate(false);
             gauge_measurements = getGaugeMeasurements();
-            gaugePowerSaverEnable(true);
+            // delay(10);
+            gaugeHibernate(true);
         }
 
         // // SHTC3 Humidity and temp sensor is SDA->IO6, SCL->IO7
         wire_swap();
         // Init performs a software reset, this resets all internal state machines, including sleep mode.
         if(initHumiditySensor()) {
-            // humiditySensorSleepEnable(false);
+            humiditySensorSleepEnable(false);
             humidity_temperature_measurements = getHumidityAndTemperatureMeasurements();
             humiditySensorSleepEnable(true);
         }
-        wire_swap();
 
     #ifdef MEASURE_TIME
         uint16_t startall = millis();
@@ -103,8 +105,9 @@ void sensorsTask() {
         ConnectWifi();
         ConnectFirebase();
         sendHumidityMeasurements(humidity_temperature_measurements);
-        sendBatteryMeasurements(gauge_measurements);
+        // sendBatteryMeasurements(gauge_measurements);
         sendLightSensorMeasurements(light_measurements);
+        sendSoilMeasurements(soil_measurements);
         DisconnectWifi();
     #endif
     }

@@ -1,11 +1,14 @@
 #include "soilsensor.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 #define SOIL_SENSOR_PIN         4
+#define CMOS_TIMER_POWER_PIN    0
 
 boolean initSoilSensor() {
+    // pinMode(CMOS_TIMER_POWER_PIN, OUTPUT);
+    // digitalWrite(CMOS_TIMER_POWER_PIN, HIGH);
     pinMode(SOIL_SENSOR_PIN, INPUT);
     DBGL("Soil sensor init success");
     return true;

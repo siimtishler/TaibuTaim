@@ -9,7 +9,7 @@ typedef struct{
 
 boolean initGauge();
 boolean powerOnGauge();
-void gaugePowerSaverEnable(boolean);
+void gaugeHibernate(boolean);
 
 float getCellVoltage();
 float getPercentage();
