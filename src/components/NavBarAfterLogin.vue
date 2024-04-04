@@ -20,6 +20,12 @@
                             <router-link class="nav-link" to="/">Kodu</router-link>
                         </li>
                         <li class="nav-item">
+                            <router-link class="nav-link" to="/feed">Feed</router-link>
+                        </li>
+                        <li class="nav-item">
+                            <router-link class="nav-link" to="/ble">BlueTooth connect</router-link>
+                        </li>
+                        <li class="nav-item">
                             <p
                                 class="nav-link"
                                 @click="handleSignOut">

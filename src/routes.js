@@ -4,6 +4,7 @@ import SigninPage from './views/SigninPage.vue';
 import RegisterPage from './views/RegisterPage.vue';
 import FeedPage from './views/FeedPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
+import BluetoothPage from './views/BluetoothPage.vue';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -21,6 +22,13 @@ const router = createRouter({
         {
             path: '/feed',
             component: FeedPage,
+            meta: {
+                requiresAuth: true,
+            }
+        },
+        {
+            path: '/ble',
+            component: BluetoothPage,
             meta: {
                 requiresAuth: true,
             }
