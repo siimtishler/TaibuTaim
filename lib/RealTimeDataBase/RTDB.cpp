@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
-#include <ArduinoJson.h>
+// #include <ArduinoJson.h>
 #include "RTDB.h"
 #include "API.h"
 
@@ -9,7 +9,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-// #define DEBUG
+#define DEBUG
 #include "SerialDebug.h"
 
 // These are defined in ignore/API.h
@@ -173,7 +173,7 @@ static void SendWiFiStatus()
 	{ // Every 5 Minutes
 		if (!wifi_connected)
 		{ // Try to reconnect if disconnected
-			ConnectWifi();
+			// ConnectWifi();
 			ConnectFirebase();
 		}
 		else
@@ -203,11 +203,16 @@ const uint8_t* convertCharToUint8Array(const char* chr) {
 }
 
 RTC_DATA_ATTR char tere[10] = {0};
-void ConnectWifi()
+boolean ConnectWifi(const char* ssid, const char* password)
 {
+	if(strlen(ssid) == 0){
+		DBGL("Missing SSID");
+		return false;
+	}
 	WiFi.persistent(false);
 
 	if(wifi_config_saved) {
+		DBGL("Taking from saved wifi config");
 		IPAddress local = IPAddress(convertCharToUint8Array(clocalIP));
 		IPAddress gateway = IPAddress(convertCharToUint8Array(cgatewayIP));
 		IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
@@ -220,11 +225,11 @@ void ConnectWifi()
 		// DBG("Subent: ");DBGL(subnet.toString());
 		// DBG("DNS: ");DBGL(dns.toString());
 		WiFi.mode(WIFI_STA);
-		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+		WiFi.begin(ssid, password);
 	}
 	else {
 		WiFi.mode(WIFI_STA);
-		WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+		WiFi.begin(ssid, password);
 	}
 
 	
@@ -234,8 +239,8 @@ void ConnectWifi()
 
 	while (WiFi.status() != WL_CONNECTED && millis() - startMillis < 5000)
 	{
-		// DBG(".");
-		// delay(100);
+		DBG(".");
+		delay(100);
 	}
 	
 	if (WiFi.status() == WL_CONNECTED)
@@ -278,6 +283,7 @@ void ConnectWifi()
 		wifi_connected = false;
 		// Handle the failure or retry if needed
 	}
+	return wifi_connected;
 }
 
 void DisconnectWifi() {

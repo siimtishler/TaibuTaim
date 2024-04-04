@@ -5,7 +5,7 @@
 #include "gauge.h"
 #include "humiditysensor.h"
 
-void ConnectWifi();
+boolean ConnectWifi(const char* ssid, const char* password);
 void ConnectFirebase();
 
 void DisconnectWifi();
