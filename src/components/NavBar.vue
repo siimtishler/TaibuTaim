@@ -20,10 +20,10 @@
                             <router-link class="nav-link" to="/">Kodu</router-link>
                         </li>
                         <li class="nav-item">
-                            <router-link class="nav-link" to="/register">Registreeri</router-link>
+                            <router-link class="nav-link" to="/signin">Logi sisse</router-link>
                         </li>
                         <li class="nav-item">
-                            <router-link class="nav-link" to="/signin">Logi sisse</router-link>
+                            <router-link class="nav-link" to="/register">Registreeri</router-link>
                         </li>
                     </ul>
                 </div>

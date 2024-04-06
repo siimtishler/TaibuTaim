@@ -4,16 +4,22 @@
             <button class="btn btn-primary btn-lg default-btn" @click="connectBlueTooth">{{ connect_btn_text }}
             </button>
         </div>
-        <div v-if="showWifiForms" class="wifi-data-form">
+        <div class="wifi-data-form">
             <h5 class="mb-3">Sisesta Wi-Fi andmed</h5>
             <div class="row">
                 <div class="col-sm-6 offset-sm-3 position-relative" style="padding:0; margin-bottom:0;">
                     <!-- Adjust the width using columns -->
                     <input :placeholder=ssid_placeholder type="text" id="ssidForm"
-                        class="form-control form-control-lg text-center" v-model="ssid" :disabled="disconnected"
-                        list="ssid_list" />
-                    <button class="eye-btn dropdown-toggle position-absolute top-50 end-0 translate-middle-y"
-                        type="button" style="height: 100%;" aria-expanded="false" @click="toggleDropdown"
+                        class="form-control form-control-lg text-center" 
+                        v-model="ssid" 
+                        :disabled="disconnected"
+                        autocomplete="one-time-code"/>
+                    <button 
+                        class="eye-btn dropdown-toggle position-absolute top-50 end-0 translate-middle-y"
+                        type="button" 
+                        style="height: 100%;" 
+                        aria-expanded="false" 
+                        @click="toggleDropdown"
                         :disabled="disconnected">
                     </button>
                     <ul ref="dropdownMenu" class="dropdown-menu">
@@ -27,8 +33,11 @@
                 <div class="col-sm-6 offset-sm-3 position-relative " style="padding:0">
                     <!-- Adjust the width using columns -->
                     <input :placeholder=password_placeholder :type="passwordVisible ? 'text' : 'password'"
-                        id="passwordForm" class="form-control form-control-lg text-center " v-model="password"
-                        :disabled="disconnected" />
+                        id="passwordForm" 
+                        class="form-control form-control-lg text-center " 
+                        v-model="password"
+                        :disabled="disconnected" 
+                        autocomplete="one-time-code" />
                     <button @click="togglePasswordVisibility"
                         class="eye-btn position-absolute top-50 end-0 translate-middle-y" style=" height: 100%;"
                         :disabled="disconnected">
@@ -37,12 +46,11 @@
                 </div>
             </div>
             <div>
-                <button class="btn btn-primary btn-lg default-btn mt-4" :disabled="disconnected"
-                    @click="sendWiFiCredentials">Saada
+                <button class="btn btn-primary btn-lg default-btn mt-4" :disabled="isButtonDisabled"
+                    @click="sendWiFiCredentials">{{ send_btn_text }}
                 </button>
             </div>
         </div>
-
         <div class="error">
             {{ error_msg }}
         </div>
@@ -51,40 +59,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
+import { useStore } from 'vuex';
+
+import { useToast } from "vue-toastification";
+
 const serviceUUID = "7f9b95e0-3f72-4f75-92d2-36c70cd39670"
 const RX_UUID = "7f9b95e1-3f72-4f75-92d2-36c70cd39670"
 const TX_UUID = "7f9b95e2-3f72-4f75-92d2-36c70cd39670"
 
+const toast = useToast();
+
 const ssid_placeholder = ref('Võrgu nimi');
 const password_placeholder = ref('Parool');
-const disconnected = ref('true');
+const disconnected = ref(true);
 const error_msg = ref('');
 const connect_btn_text = ref('Ühenda seadmega')
+const send_btn_text = ref('Saada');
 const ssid = ref('');
 const password = ref('');
 const passwordVisible = ref('')
 
+const disableSend = ref(false);
+
 const ssid_arr = ref([]);
-const showWifiForms = ref(false);
 const dropdownMenu = ref(null);
+
+const store = useStore();
 
 let device
 let writableCharacteristic;
 let readableCharacteristic;
+let readSSID = false;
+
+const isButtonDisabled = computed(() => {
+    return disconnected.value || disableSend.value;
+});
 
 onMounted(() => {
     const savedSSIDs = JSON.parse(localStorage.getItem('ssid_arr'));
-    if (savedSSIDs) {
+    if (savedSSIDs != null) {
         ssid_arr.value = savedSSIDs;
-        console.log(ssid_arr.value)
+    }
+    device = store.state.device;
+    writableCharacteristic = store.state.writableCharacteristic;
+    readableCharacteristic = store.state.readableCharacteristic;
+    if(device) {
+        if(device.gatt.connected){
+            disconnected.value = false;
+            connect_btn_text.value = "Ühenda lahti"
+        }
     }
 });
 
-
 const toggleDropdown = () => {
     if (dropdownMenu.value && ssid_arr.value.length !== 0) {
-        console.log(ssid_arr.value)
         dropdownMenu.value.style.display = dropdownMenu.value.style.display === 'block' ? 'none' : 'block';
     }
 };
@@ -124,10 +153,16 @@ const requestDevice = async () => {
 
     device.addEventListener('gattserverdisconnected', () => {
         if (!device || !device.gatt.connected) {
+            device = null;
             console.log("Seade yhendus lahti");
+            store.commit('removeDevice');
             setInitialFormValues();
+            connect_btn_text.value = 'Ühenda seadmega'
+            console.log(connect_btn_text.value);
         }
     });
+
+    store.commit('setDevice', device);
 }
 
 const connectDevice = async () => {
@@ -143,11 +178,9 @@ const connectDevice = async () => {
         await readableCharacteristic.startNotifications();
         console.log("Started notifications");
     }
-
+    store.commit('setWritableCharacteristic', writableCharacteristic);
+    store.commit('setReadableCharacteristic', readableCharacteristic);
     if (device.gatt.connected) return;
-    // console.log(service);
-    // console.log(writableCharacteristic);
-    // console.log(readableCharacteristic);
 }
 
 
@@ -159,9 +192,10 @@ const connectBlueTooth = async () => {
     if (device) {
         device.gatt.disconnect();
         device = null;
+        store.commit('removeDevice');
+        setInitialFormValues();
         writableCharacteristic = null;
         readableCharacteristic = null;
-        showWifiForms.value = false;
         return;
     }
     try {
@@ -169,8 +203,8 @@ const connectBlueTooth = async () => {
         connect_btn_text.value = "Ühendamine..."
         await connectDevice();
         connect_btn_text.value = "Ühenda lahti"
+        toast.info("Bluetooth ühendatud");
         disconnected.value = false;
-        showWifiForms.value = true;
     } catch (error) {
         console.log("error:", error);
     }
@@ -188,22 +222,25 @@ const parseString = (event) => {
 
 const readValue = (event) => {
     let rxStr = parseString(event)
-    // console.log(rxStr);
+    console.log(rxStr);
     if (rxStr == "Success") {
-        console.log(rxStr);
-        console.log("WiFi connect success");
+        toast.success("WiFi ühendatud");
     }
     else if (rxStr == "Failed") {
-        console.log("WiFi connect Failed");
+        toast.error("Ei suudetud WiFi ühendust luua");
     }
-    else if (rxStr.includes("<SSID>")) {
-        rxStr = rxStr.substring("<SSID>".length, rxStr.length);
-            
-        // ssid_arr.value.push(rxStr);
+    else if(readSSID && rxStr !== "</SSID_END>"){
+        ssid_arr.value.push(rxStr);
+    }
+    else if (rxStr === "<SSID_START>") {
+        readSSID = true;
+        ssid_arr.value.length = 0;
         localStorage.clear();
-        localStorage.setItem('ssid_arr', JSON.stringify(rxStr));
-
-
+    }
+    else if(rxStr == "</SSID_END>") {
+        readSSID = false;
+        console.log(ssid_arr.value);
+        localStorage.setItem('ssid_arr', JSON.stringify(ssid_arr.value));
         if (dropdownMenu.value) {
             dropdownMenu.value.style.display = 'block';
         }
@@ -211,6 +248,7 @@ const readValue = (event) => {
 }
 
 const sendWiFiCredentials = async () => {
+    
     let _ssid = ssid.value;
     let _password = password.value;
     let _ssid_len = _ssid.length;
@@ -244,10 +282,14 @@ const sendWiFiCredentials = async () => {
     let encoder = new TextEncoder();
 
     try {
+        send_btn_text.value = "Saadan...";
+        disableSend.value = true;
         await writableCharacteristic.writeValue(encodedData);
+        send_btn_text.value = "Saada";
+        disableSend.value = false;
     }
     catch (e) {
-        error_msg.value = e;
+        console.log(e);
         return;
     }
 }

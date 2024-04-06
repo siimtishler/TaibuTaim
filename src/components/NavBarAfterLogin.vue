@@ -32,9 +32,9 @@
                                 Log Out
                             </p>
                         </li>
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <i class="nav-link pi pi-sign-out logout-icon"></i>
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
             </div>
@@ -44,10 +44,21 @@
 
 <script setup>
 import { getAuth, signOut } from 'firebase/auth';
+import { useStore } from 'vuex';
 import router from '@/routes';
+
+const store = useStore();
 
 const handleSignOut = () => {
     let auth = getAuth();
+    let device = store.state.device;
+    if(device) {
+        if(device.gatt.connected) {
+            device.gatt.disconnect();
+            device = null;
+            store.commit('removeDevice');
+        }
+    }
     signOut(auth).then(() =>{
         router.push("/");
     });

@@ -8,12 +8,34 @@ import 'primeicons/primeicons.css'
 import 'primevue/resources/primevue.min.css'; // Import PrimeVue core CSS
 import 'firebase/auth'
 import 'firebase/database'
+import store from './store/store'
 import router from './routes.js';
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
-const fbApp = initializeApp(fireBaseAPI)
+export const firebaseInstance = initializeApp(fireBaseAPI)
 
 const app = createApp(App)
 
 app.use(router)
-
+app.use(store);
+app.use(Toast, {
+    transition: "Vue-Toastification__bounce",
+    maxToasts: 3,
+    newestOnTop: true,
+    position: "top-right",
+    timeout: 2500,
+    closeOnClick: true,
+    pauseOnFocusLoss: false,
+    pauseOnHover: false,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: true,
+    closeButton: "button",
+    icon: true,
+    rtl: false
+  });
 app.mount('#app');
+
+

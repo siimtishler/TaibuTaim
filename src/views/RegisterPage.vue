@@ -1,5 +1,4 @@
 <template>
-    <div v-if="errMsg" class="error">{{ errMsg }}</div>
     <div class="container py-5 my-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
             <div class="col col-xl-10">
@@ -72,6 +71,7 @@
                         </div>
                     </div> 
                 </div>
+                <div v-if="errMsg" class="alert alert-danger text-center mt-4" role="alert">{{ errMsg }}</div>
             </div>
         </div>
     </div>
@@ -82,6 +82,9 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useToast } from "vue-toastification";
+
+const toast = useToast();
 
 const router = useRouter();
 const email = ref('');
@@ -103,6 +106,7 @@ const register = () => {
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
         .then((data) => {
             console.log("Registered");
+            toast.success("Registreeritud")
             router.push('/feed');
         })
         .catch((error) => {
@@ -112,7 +116,7 @@ const register = () => {
                     errMsg.value = "Valesti sisestatud E-mail";
                     break;
                 case "auth/email-already-in-use":
-                    errMsg.value = "E-mail juba kasutuses";
+                    errMsg.value = "Selline E-mail juba kasutuses";
                     break;
                 case "auth/wrong-password":
                     errMsg.value = "Wrong password";
@@ -134,6 +138,18 @@ const register = () => {
 
 
 <style scoped>
+
+.container {
+    font-family: 'Monsterrat';
+}
+
+.alert {
+    justify-content: center;
+    left: 25%;
+    width: 50%;
+    border:none;
+    color:black;
+}
 
 .side-image {
     content: '';
