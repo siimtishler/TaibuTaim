@@ -141,6 +141,9 @@ void getAllWiFiSSIDs() {
 		pTxCharacteristic->setValue(ssid);
 		pTxCharacteristic->notify();
 	}
+	std::string ssid = "</SSID_END>";
+	pTxCharacteristic->setValue(ssid);
+	pTxCharacteristic->notify();
 }
 
 #define SERVICE_UUID "7f9b95e0-3f72-4f75-92d2-36c70cd39670" // UART service UUID
