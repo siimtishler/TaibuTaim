@@ -1,14 +1,17 @@
 #pragma once
 #include <stdint.h>
 #include <Arduino.h>
+#include <vector>
 #include "lightsensor.h"
 #include "gauge.h"
 #include "humiditysensor.h"
 
 boolean ConnectWifi(const char* ssid, const char* password);
+void DisconnectWifi();
+
 void ConnectFirebase();
 
-void DisconnectWifi();
+std::vector<std::string> getAllWiFiSSIDs();
 
 void sendBatteryMeasurements(gauge_measurements_t measurements);
 void sendLightSensorMeasurements(light_sens_measurements_t measurements);

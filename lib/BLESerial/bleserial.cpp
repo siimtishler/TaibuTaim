@@ -1,7 +1,10 @@
+#include "bleserial.h"
+#include "RTDB.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <vector>
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
@@ -57,6 +60,8 @@ class MyCallbacks : public BLECharacteristicCallbacks
 			pTxCharacteristic->setValue(connection);
 			pTxCharacteristic->notify();
 
+			// TODO When connected save to non volatile memory
+
 			if(ConnectWifi(ssid.c_str(), password.c_str())) {
 				connection = "Success";
 				pTxCharacteristic->setValue(connection);
@@ -78,8 +83,6 @@ class MyCallbacks : public BLECharacteristicCallbacks
 
 void initBleSerial() {
 
-
-	// Create the BLE Device
 	BLEDevice::init("TaibuTaim");
 
 	// Create the BLE Server
@@ -111,6 +114,16 @@ void initBleSerial() {
 	Serial.println("Waiting a client connection to notify...");
 }
 
+static void sendAllWifiSSIDs() {
+	std::vector<std::string> ssids = getAllWiFiSSIDs();
+	for (int i = 0; i < ssids.size(); i++)
+	{
+		Serial.println(ssids[i].c_str());
+		pTxCharacteristic->setValue(ssids[i]);
+		pTxCharacteristic->notify();
+	}
+}
+
 void bleSerialTask() {
 	static boolean first_ble_connect = true;
 	if (deviceConnected)
@@ -130,10 +143,11 @@ void bleSerialTask() {
 	if (deviceConnected && !oldDeviceConnected)
 	{
 		if(first_ble_connect){
-			getAllWiFiSSIDs();
+			sendAllWifiSSIDs();
 			first_ble_connect = false;
 		}
 		Serial.println("Connected");
 		oldDeviceConnected = deviceConnected;
 	}
 }
+

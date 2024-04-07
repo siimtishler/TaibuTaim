@@ -46,7 +46,7 @@ static void SetBatteryDataJSON(gauge_measurements_t measurements, FirebaseJson *
 }
 
 static void SetHumidityDataJSON(humidity_measurements_t measurements, FirebaseJson *pfbjson) {
-	pfbjson->add("humidty", String(measurements.humidity));
+	pfbjson->add("humidity", String(measurements.humidity));
 	pfbjson->add("temperature", String(measurements.temperature));
 }
 
@@ -73,10 +73,12 @@ static bool PushBatteryData(FirebaseJson fbjson)
 	{
 		if (Firebase.RTDB.pushJSON(&fbdo, "battery/", &fbjson))
 		{
-			String str;
-			fbjson.toString(str,true);
-			DBGL(str);
-			return true;
+			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				String str;
+				fbjson.toString(str,true);
+				DBGL(str);
+				return true;
+			}
 		}
 		DBGL(fbdo.errorReason());
 	}
@@ -87,12 +89,14 @@ static bool PushHumidityData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSON(&fbdo, "humidity/", &fbjson))
+		if (Firebase.RTDB.pushJSON(&fbdo, "humidity/", &fbjson))
 		{
-			String str;
-			fbjson.toString(str,true);
-			DBGL(str);
-			return true;
+			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				String str;
+				fbjson.toString(str,true);
+				DBGL(str);
+				return true;
+			}
 		}
 		DBGL(fbdo.errorReason());
 	}
@@ -103,12 +107,14 @@ static bool PushLightData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSON(&fbdo, "light/", &fbjson))
+		if (Firebase.RTDB.pushJSON(&fbdo, "light/", &fbjson))
 		{
-			String str;
-			fbjson.toString(str,true);
-			DBGL(str);
-			return true;
+			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				String str;
+				fbjson.toString(str,true);
+				DBGL(str);
+				return true;
+			}
 		}
 		DBGL(fbdo.errorReason());
 	}
@@ -133,9 +139,12 @@ static bool PushSoilData(uint16_t soilMoisture)
 	if (IsFireBaseReady())
 	{
 		String str_soilMoisture = String(soilMoisture);
-		if (Firebase.RTDB.setInt(&fbdo, "soil_moisture/", soilMoisture))
+		if (Firebase.RTDB.pushInt(&fbdo, "soil_moisture/", soilMoisture))
 		{
-			return true;
+			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				DBGL("Pushed soil moisture");
+				return true;
+			}
 		}
 		DBGL(fbdo.errorReason());
 	}
@@ -182,6 +191,25 @@ static void SendWiFiStatus()
 		}
 		wifi_last_status_sent = millis();
 	}
+}
+
+std::vector<std::string> getAllWiFiSSIDs() {
+	uint8_t num = WiFi.scanNetworks();
+	std::vector<std::string> ssid;
+	if(num == 0) {
+		Serial.println("no networks");
+		return ssid;
+	}
+
+	ssid.push_back("<SSID_START>");
+
+	for (int i = 0; i < num; i++)
+	{
+		ssid.push_back(WiFi.SSID(i).c_str());
+	}
+	ssid.push_back("</SSID_END>");
+
+	return ssid;
 }
 
 RTC_DATA_ATTR boolean wifi_config_saved = false;
