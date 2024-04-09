@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
-// #include <ArduinoJson.h>
+#include "nvsmemory.h"
 #include "RTDB.h"
 #include "API.h"
 
@@ -56,15 +56,45 @@ static void SetLightDataJSON(light_sens_measurements_t measurements, FirebaseJso
 	pfbjson->add("white", String(measurements.white));
 }
 
-static void SendWiFiTimestamp()
+static void SetMoistureDataJSON(uint16_t measurements, FirebaseJson *pfbjson) {
+	pfbjson->add("moisture", String(measurements));
+}
+
+
+void SetMeasurementsDataJSON(gauge_measurements_t gm, light_sens_measurements_t lm, humidity_measurements_t hm, uint16_t sm, FirebaseJson *pfbjson) {
+	FirebaseJson battery;
+	SetBatteryDataJSON(gm, &battery);
+	pfbjson->add("battery", battery);
+
+	FirebaseJson light;
+	SetLightDataJSON(lm, &light);
+	pfbjson->add("light", light);
+
+	FirebaseJson humidity;
+	SetHumidityDataJSON(hm, &humidity);
+	pfbjson->add("humidity", humidity);
+
+	FirebaseJson soil;
+	SetMoistureDataJSON(sm, &soil);
+	pfbjson->add("soil", soil);
+
+	String str;
+	pfbjson->toString(str, true);
+	DBGL(str); 
+}
+
+
+static boolean SendWiFiTimestamp()
 {
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setTimestamp(&fbdo, "lockers/locker1/wifi-last-connected"))
+		if (Firebase.RTDB.setTimestamp(&fbdo, "wifi-last-connected"))
 		{
 			DBGL("\nWifi timestamp sent");
+			return true;
 		}
 	}
+	return false;
 }
 
 static bool PushBatteryData(FirebaseJson fbjson)
@@ -121,25 +151,24 @@ static bool PushLightData(FirebaseJson fbjson)
 	return false;
 }
 
-void send(light_sens_measurements_t val, const char* path) { 
-	FirebaseJson fbj;
-	fbj.add("A", val.ambient);
-	fbj.add("L", val.lux);
-	fbj.add("W", val.white);
+void send(uint16_t val) { 
+
 	if (IsFireBaseReady())
 	{
-		if (Firebase.RTDB.setJSON(&fbdo, path, &fbj)){
-			DBGL("Sent");
+		if (Firebase.RTDB.push(&fbdo, "test/soil", val)){
+			if (Firebase.RTDB.pushTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				DBG("Sent: ");
+				DBGL(val);
+			}
 		}
 	}
 }
 
-static bool PushSoilData(uint16_t soilMoisture)
+static bool PushSoilData(FirebaseJson fbjson)
 {
 	if (IsFireBaseReady())
 	{
-		String str_soilMoisture = String(soilMoisture);
-		if (Firebase.RTDB.pushInt(&fbdo, "soil_moisture/", soilMoisture))
+		if (Firebase.RTDB.pushJSON(&fbdo, "soil/", &fbjson))
 		{
 			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
 				DBGL("Pushed soil moisture");
@@ -170,27 +199,52 @@ void sendLightSensorMeasurements(light_sens_measurements_t measurements) {
 }
 
 void sendSoilMeasurements(uint16_t measurements) {
-	PushSoilData(measurements);
+	FirebaseJson fbjson;
+	SetMoistureDataJSON(measurements, &fbjson);
+	PushSoilData(fbjson);
+}
+
+void PushAllData(FirebaseJson fbjson) {
+	if (IsFireBaseReady())
+	{
+		if (Firebase.RTDB.pushJSON(&fbdo, "measurements/", &fbjson))
+		{
+			if (Firebase.RTDB.setTimestamp(&fbdo, fbdo.dataPath() + "/" + fbdo.pushName() + "/timestamp")){
+				String str;
+				fbjson.toString(str,true);
+				DBGL(str);
+			}
+		}
+		DBGL(fbdo.errorReason());
+	}
+}
+
+void sendAllMeasurements(gauge_measurements_t gm, light_sens_measurements_t lm, humidity_measurements_t hm, uint16_t sm) {
+	FirebaseJson fbjson;
+	SetMeasurementsDataJSON(gm, lm, hm, sm, &fbjson);
+	PushAllData(fbjson);
+	sendWiFiStatus();
 }
 
 
-static void SendWiFiStatus()
+void sendWiFiStatus()
 {
-	static uint32_t wifi_last_status_sent = 0;
+	SendWiFiTimestamp(); // Send status
 
-	if ((millis() - wifi_last_status_sent) > 5000)
-	{ // Every 5 Minutes
-		if (!wifi_connected)
-		{ // Try to reconnect if disconnected
-			// ConnectWifi();
-			ConnectFirebase();
-		}
-		else
-		{
-			SendWiFiTimestamp(); // Send status
-		}
-		wifi_last_status_sent = millis();
-	}
+	// wifi_connected not used correctly atm, impl later
+	return;
+
+	// Try to reconnect if disconnected
+	// if (!wifi_connected)
+	// { 
+	// 	ConnectWifi();
+	// 	ConnectFirebase();
+	// }
+	// else
+	// {
+	// 	SendWiFiTimestamp(); // Send status
+	// }
+
 }
 
 std::vector<std::string> getAllWiFiSSIDs() {
@@ -212,13 +266,13 @@ std::vector<std::string> getAllWiFiSSIDs() {
 	return ssid;
 }
 
-RTC_DATA_ATTR boolean wifi_config_saved = false;
-RTC_DATA_ATTR char clocalIP[16];
-RTC_DATA_ATTR char cgatewayIP[16];
-RTC_DATA_ATTR char csubnetIP[16];
-RTC_DATA_ATTR char cdnsIP[16];
-RTC_DATA_ATTR uint8_t channel;
-RTC_DATA_ATTR uint8_t bssid[6];
+// RTC_DATA_ATTR boolean wifi_config_saved = false;
+// RTC_DATA_ATTR char clocalIP[16];
+// RTC_DATA_ATTR char cgatewayIP[16];
+// RTC_DATA_ATTR char csubnetIP[16];
+// RTC_DATA_ATTR char cdnsIP[16];
+// RTC_DATA_ATTR uint8_t channel;
+// RTC_DATA_ATTR uint8_t bssid[6];
 
 
 const uint8_t* convertCharToUint8Array(const char* chr) {
@@ -231,36 +285,75 @@ const uint8_t* convertCharToUint8Array(const char* chr) {
 }
 
 RTC_DATA_ATTR char tere[10] = {0};
+
+
 boolean ConnectWifi(const char* ssid, const char* password)
 {
-	if(strlen(ssid) == 0){
+	boolean wifiExistsInMemory = memoryGetWifiExists();
+
+	if(strlen(ssid) == 0) {
+		if(wifiExistsInMemory) {
+			memorySetWifiExists(false);
+		}
 		DBGL("Missing SSID");
 		return false;
 	}
 	WiFi.persistent(false);
 
-	if(wifi_config_saved) {
-		DBGL("Taking from saved wifi config");
-		IPAddress local = IPAddress(convertCharToUint8Array(clocalIP));
-		IPAddress gateway = IPAddress(convertCharToUint8Array(cgatewayIP));
-		IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
-		IPAddress dns = IPAddress(convertCharToUint8Array(cdnsIP));
+
+	if(wifiExistsInMemory) {
+		DBGL("Taking Wifi config from memory");
+		char ip[16]; 
+		char gw[16]; 
+		char sn[16]; 
+		char dn[16]; 
+
+		strcpy(ip, memoryGetLocalIP().c_str());
+		strcpy(gw, memoryGetGatewayIP().c_str());
+		strcpy(sn, memoryGetSubnetIP().c_str());
+		strcpy(dn, memoryGetDnsIP().c_str());
+
+		IPAddress local = IPAddress(convertCharToUint8Array(ip));
+		IPAddress gateway = IPAddress(convertCharToUint8Array(gw));
+		IPAddress subnet = IPAddress(convertCharToUint8Array(sn));
+		IPAddress dns = IPAddress(convertCharToUint8Array(dn));
+
+		DBGL(local.toString());
+		DBGL(gateway.toString());
+		DBGL(subnet.toString());
+		DBGL(dns.toString());
 
 		WiFi.config(local, gateway, subnet, dns);
-		// DBGL("Using saved config");
-		// DBG("Local: ");DBGL(local.toString());
-		// DBG("Gateway: ");DBGL(gateway.toString());
-		// DBG("Subent: ");DBGL(subnet.toString());
-		// DBG("DNS: ");DBGL(dns.toString());
 		WiFi.mode(WIFI_STA);
 		WiFi.begin(ssid, password);
 	}
+
 	else {
 		WiFi.mode(WIFI_STA);
 		WiFi.begin(ssid, password);
+	
 	}
 
-	
+	// if(wifi_config_saved) {
+	// 	DBGL("Taking from saved wifi config");
+	// 	IPAddress local = IPAddress(convertCharToUint8Array(clocalIP));
+	// 	IPAddress gateway = IPAddress(convertCharToUint8Array(cgatewayIP));
+	// 	IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
+	// 	IPAddress dns = IPAddress(convertCharToUint8Array(cdnsIP));
+	// 	WiFi.config(local, gateway, subnet, dns);
+	// 	// DBGL("Using saved config");
+	// 	// DBG("Local: ");DBGL(local.toString());
+	// 	// DBG("Gateway: ");DBGL(gateway.toString());
+	// 	// DBG("Subent: ");DBGL(subnet.toString());
+	// 	// DBG("DNS: ");DBGL(dns.toString());
+	// 	WiFi.mode(WIFI_STA);
+	// 	WiFi.begin(ssid, password);
+	// }
+	// else {
+	// 	WiFi.mode(WIFI_STA);
+	// 	WiFi.begin(ssid, password);
+	// }
+
 	DBGL("Connecting to Wi-Fi");
 
 	unsigned long startMillis = millis();
@@ -273,40 +366,52 @@ boolean ConnectWifi(const char* ssid, const char* password)
 	
 	if (WiFi.status() == WL_CONNECTED)
 	{
-		if(!wifi_config_saved) {
-			strcpy(clocalIP, WiFi.localIP().toString().c_str());
-			strcpy(cdnsIP, WiFi.dnsIP().toString().c_str());
-			strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
-			strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
 
-			/* ---- Might not be needed ---- */
-			uint8_t* pbssid = WiFi.BSSID();
-			if(pbssid != nullptr){
-				memcpy(bssid, pbssid, 6);
-			}
-			channel = (uint8_t)WiFi.channel();
+		if (!wifiExistsInMemory)
+		{
+			memorySetLocalIP(WiFi.localIP().toString());
+			memorySetDnsIP(WiFi.dnsIP().toString());
+			memorySetGatewayIP(WiFi.gatewayIP().toString());
+			memorySetSubnetIP(WiFi.subnetMask().toString());
+			memorySetSSID(String(ssid));
+			memorySetPassword(String(password));
 
-			for (size_t i = 0; i < 6; i++)
-			{
-				Serial.print(bssid[i], HEX);
-				DBG(" ");
-			}
-			DBGL("");
-			DBG("Channel: "); DBGL(channel);
-			/* ------------------------------ */
-
-			DBGL("Saved WiFi config:");
-			// DBGL(clocalIP);
-			// DBGL(cdnsIP);
-			// DBGL(cgatewayIP);
-			// DBGL(csubnetIP);
-
-			wifi_config_saved = true;
+			memorySetWifiExists(true);
 		}
+		// if(!wifi_config_saved) 
+		// {
+		// 	strcpy(clocalIP, WiFi.localIP().toString().c_str());
+		// 	strcpy(cdnsIP, WiFi.dnsIP().toString().c_str());
+		// 	strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
+		// 	strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
+		// 	/* ---- Might not be needed ---- */
+		// 	// uint8_t* pbssid = WiFi.BSSID();
+		// 	// if(pbssid != nullptr){
+		// 	// 	memcpy(bssid, pbssid, 6);
+		// 	// }
+		// 	// channel = (uint8_t)WiFi.channel();
+		// 	// for (size_t i = 0; i < 6; i++)
+		// 	// {
+		// 	// 	Serial.print(bssid[i], HEX);
+		// 	// 	DBG(" ");
+		// 	// }
+		// 	// DBGL("");
+		// 	// DBG("Channel: "); DBGL(channel);
+		// 	/* ------------------------------ */
+		// 	// DBGL("Saved WiFi config:");
+		// 	// DBGL(clocalIP);
+		// 	// DBGL(cdnsIP);
+		// 	// DBGL(cgatewayIP);
+		// 	// DBGL(csubnetIP);
+		// 	wifi_config_saved = true;
+		// }
 		wifi_connected = true;
 	}
-	else
+	else // If connection failed and timeout reached
 	{
+		if(wifiExistsInMemory) {
+			memorySetWifiExists(false);
+		}
 		DBGL("\nWi-Fi connection failed. Timeout reached.");
 		wifi_connected = false;
 		// Handle the failure or retry if needed

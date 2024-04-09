@@ -2,7 +2,7 @@
 #include "Adafruit_VEML7700.h"
 #include "timeutils.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define LIGHT_SENSOR_TIMEOUT SEC_TO_MS(2)

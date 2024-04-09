@@ -102,12 +102,14 @@ void sensorsTask() {
         DBG("Time spent for all combined: "); DBGL(end-startall);
         last_task_ms = millis();
     #else
-        ConnectWifi();
+        ConnectWifi("CGA2121_2.4GHZ", "kell1234");
         ConnectFirebase();
-        sendHumidityMeasurements(humidity_temperature_measurements);
-        // sendBatteryMeasurements(gauge_measurements);
-        sendLightSensorMeasurements(light_measurements);
-        sendSoilMeasurements(soil_measurements);
+        // sendHumidityMeasurements(humidity_temperature_measurements);
+        // // sendBatteryMeasurements(gauge_measurements);
+        // sendLightSensorMeasurements(light_measurements);
+        // sendSoilMeasurements(soil_measurements);
+
+        sendAllMeasurements(gauge_measurements, light_measurements, humidity_temperature_measurements, soil_measurements);
         DisconnectWifi();
     #endif
     }

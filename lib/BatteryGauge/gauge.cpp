@@ -2,7 +2,7 @@
 #include "gauge.h"
 #include "timeutils.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define GAUGE_TIMEOUT       SEC_TO_MS(5)

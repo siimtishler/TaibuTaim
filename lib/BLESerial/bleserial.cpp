@@ -60,13 +60,16 @@ class MyCallbacks : public BLECharacteristicCallbacks
 			pTxCharacteristic->setValue(connection);
 			pTxCharacteristic->notify();
 
-			// TODO When connected save to non volatile memory
+			// TODO: When connected save to non volatile memory
 
 			if(ConnectWifi(ssid.c_str(), password.c_str())) {
 				connection = "Success";
 				pTxCharacteristic->setValue(connection);
 				pTxCharacteristic->notify();
 				Serial.println("Success");
+				delay(500);
+				Serial.println("Restarting");
+				esp_restart();
 			}
 			else {
 				connection = "Failed";
