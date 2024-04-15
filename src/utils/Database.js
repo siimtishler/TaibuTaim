@@ -1,15 +1,15 @@
-import { getDatabase, ref, get, set, update } from "firebase/database";
-import { firebaseInstance } from "@/main.js";
+import { getDatabase, ref, get, set, update, onValue } from "firebase/database";
+import { getFirebase } from "../fireBaseAPI";
 
-const db = getDatabase(firebaseInstance);
+const db = getFirebase().database;
 
 class Database {
-
     static greet() {
-        console.log('Hello from the Database class');
+        console.log(db);
     }
     // Static function to get data from the database
     static async getData(path) {
+        console.log("Getting data");
         try {
             const statusref = ref(db, path);
             const snapshot = await get(statusref);
@@ -17,6 +17,19 @@ class Database {
         } catch (error) {
             console.error('Error getting data:', error);
         }
+    }
+
+    static async getDataWhenUpdates(path, callback) {
+        const dataRef = ref(db, path);
+        onValue(dataRef, (snapshot) => {
+            console.log("Getting new data");
+            const data = snapshot.val();
+            if (data) {
+                callback();
+            } else {
+                console.log('No data available');
+            }
+        });
     }
 
     // Static function to set data in the database
@@ -52,7 +65,7 @@ class Database {
     // Static function to get humidity data
     static async getHumidityData() {
         try {
-            const data = await Database.getData('humidity');
+            const data = await this.getData('measurements/humidity');
             return data;
         } catch (error) {
             console.error('Error getting humidity data:', error);
@@ -62,7 +75,7 @@ class Database {
     // Static function to get light data
     static async getLightData() {
         try {
-            const data = await Database.getData('light');
+            const data = await this.getData('measurements/light');
             return data;
         } catch (error) {
             console.error('Error getting light data:', error);
@@ -72,10 +85,20 @@ class Database {
     // Static function to get soil moisture data
     static async getSoilMoistureData() {
         try {
-            const data = await Database.getData('soil_moisture');
+            const data = await this.getData('measurements/soil_moisture');
             return data;
         } catch (error) {
             console.error('Error getting soil moisture data:', error);
+        }
+    }
+
+    // Static function to get soil moisture data
+    static async getBatteryData() {
+        try {
+            const data = await this.getData('measurements/battery');
+            return data;
+        } catch (error) {
+            console.error('Error getting soil battery data:', error);
         }
     }
 }

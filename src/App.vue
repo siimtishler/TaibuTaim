@@ -3,9 +3,7 @@
 	<nav-bar-after-login v-else></nav-bar-after-login>
 
 	<!-- <button @click.prevent="loggedIn = !loggedIn">Log in</button> -->
-
 	<router-view>
-
 	</router-view>
 </template>
 

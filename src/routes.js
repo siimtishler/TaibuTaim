@@ -5,6 +5,7 @@ import RegisterPage from './views/RegisterPage.vue';
 import FeedPage from './views/FeedPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 import BluetoothPage from './views/BluetoothPage.vue';
+import PlantDetails from './views/PlantDetails.vue';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -29,6 +30,13 @@ const router = createRouter({
         {
             path: '/ble',
             component: BluetoothPage,
+            meta: {
+                requiresAuth: true,
+            }
+        },
+        {
+            path: '/details',
+            component: PlantDetails,
             meta: {
                 requiresAuth: true,
             }

@@ -132,7 +132,9 @@ const setInitialFormValues = () => {
     password_placeholder.value = 'Parool';
     disconnected.value = 'true';
     error_msg.value = '';
-    connect_btn_text.value = 'Ühenda seadmega'
+    connect_btn_text.value = 'Ühenda seadmega';
+    send_btn_text.value = 'Saada';
+    disableSend.value = false;
     ssid.value = '';
     password.value = '';
     if (dropdownMenu.value) {
@@ -222,19 +224,24 @@ const parseString = (event) => {
 
 const readValue = (event) => {
     let rxStr = parseString(event)
-    console.log(rxStr);
+    // console.log(rxStr);
     if (rxStr == "Success") {
+        console.log("tra la la la")
         toast.success("WiFi ühendatud");
     }
     else if (rxStr == "Failed") {
         toast.error("Ei suudetud WiFi ühendust luua");
     }
     else if(readSSID && rxStr !== "</SSID_END>"){
+        if (!Array.isArray(ssid_arr.value)) {
+            ssid_arr.value = [];
+        }
         ssid_arr.value.push(rxStr);
+        console.log("SSID: ", rxStr);
     }
     else if (rxStr === "<SSID_START>") {
         readSSID = true;
-        ssid_arr.value.length = 0;
+        ssid_arr.value = [];
         localStorage.clear();
     }
     else if(rxStr == "</SSID_END>") {

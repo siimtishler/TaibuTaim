@@ -106,19 +106,19 @@ const signIn = () => {
             console.log(error.code);
             switch(error.code){
                 case "auth/invalid-email":
-                    errMsg.value = "Invalid email";
+                    errMsg.value = "Email valesti sisestatud";
                     break;
                 case "auth/user-not-found":
-                    errMsg.value = "User not found";
+                    errMsg.value = "Kasutajat ei leitud";
                     break;
                 case "auth/wrong-password":
-                    errMsg.value = "Wrong password";
+                    errMsg.value = "Vale parool";
                     break;
                 case "auth/missing-password":
-                    errMsg.value = "Password field empty";
+                    errMsg.value = "Sisestage parool";
                     break;
                 default:
-                    errMsg.value = "Email or password was incorrect";
+                    errMsg.value = "Sellise Emaili ja parooliga kasutajat ei eksisteeri";
                     break;
             }
         });
