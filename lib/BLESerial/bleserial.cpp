@@ -8,8 +8,9 @@
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
+boolean deviceConnected = false;
+boolean oldDeviceConnected = false;
+boolean gotWifi = false;
 uint8_t txValue = 0;
 
 // See the following for generating UUIDs:
@@ -62,14 +63,12 @@ class MyCallbacks : public BLECharacteristicCallbacks
 
 			// TODO: When connected save to non volatile memory
 
-			if(ConnectWifi(ssid.c_str(), password.c_str())) {
+			if(ConnectWifi(ssid.c_str(), password.c_str(), true)) {
 				connection = "Success";
 				pTxCharacteristic->setValue(connection);
 				pTxCharacteristic->notify();
 				Serial.println("Success");
-				delay(500);
-				Serial.println("Restarting");
-				esp_restart();
+				gotWifi = true;
 			}
 			else {
 				connection = "Failed";
@@ -151,6 +150,14 @@ void bleSerialTask() {
 		}
 		Serial.println("Connected");
 		oldDeviceConnected = deviceConnected;
+	}
+
+	if (gotWifi) {
+		// Restart the device
+		// Disconnect BLE
+		delay(10);
+		BLEDevice::deinit();
+		esp_restart();
 	}
 }
 

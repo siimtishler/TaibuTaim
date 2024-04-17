@@ -1,7 +1,7 @@
 #include "humiditysensor.h"
 #include "Adafruit_SHTC3.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 #define HUMIDITY_SDA_PIN        6

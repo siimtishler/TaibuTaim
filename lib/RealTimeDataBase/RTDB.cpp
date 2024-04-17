@@ -42,7 +42,7 @@ static boolean IsFireBaseReady()
 static void SetBatteryDataJSON(gauge_measurements_t measurements, FirebaseJson *pfbjson) {
 	pfbjson->add("percentage", String(measurements.percentage));
 	pfbjson->add("voltage", String(measurements.voltage));					 
-	pfbjson->add("chgrate", String(measurements.chg_rate));
+	// pfbjson->add("chgrate", String(measurements.chg_rate));
 }
 
 static void SetHumidityDataJSON(humidity_measurements_t measurements, FirebaseJson *pfbjson) {
@@ -266,14 +266,6 @@ std::vector<std::string> getAllWiFiSSIDs() {
 	return ssid;
 }
 
-// RTC_DATA_ATTR boolean wifi_config_saved = false;
-// RTC_DATA_ATTR char clocalIP[16];
-// RTC_DATA_ATTR char cgatewayIP[16];
-// RTC_DATA_ATTR char csubnetIP[16];
-// RTC_DATA_ATTR char cdnsIP[16];
-// RTC_DATA_ATTR uint8_t channel;
-// RTC_DATA_ATTR uint8_t bssid[6];
-
 
 const uint8_t* convertCharToUint8Array(const char* chr) {
 	static uint8_t octets[4]; // Static array to hold the octets
@@ -284,10 +276,17 @@ const uint8_t* convertCharToUint8Array(const char* chr) {
     return octets; // Return the pointer to the array
 }
 
-RTC_DATA_ATTR char tere[10] = {0};
+RTC_DATA_ATTR boolean badConfig = false;
 
+void setbadConfig(boolean val) {
+	badConfig = val;
+}
 
-boolean ConnectWifi(const char* ssid, const char* password)
+boolean getbadConfig() {
+	return badConfig;
+}
+
+boolean ConnectWifi(const char* ssid, const char* password, boolean tryConnectFirstTime)
 {
 	boolean wifiExistsInMemory = memoryGetWifiExists();
 
@@ -301,7 +300,7 @@ boolean ConnectWifi(const char* ssid, const char* password)
 	WiFi.persistent(false);
 
 
-	if(wifiExistsInMemory) {
+	if(wifiExistsInMemory && !tryConnectFirstTime && !badConfig) {
 		DBGL("Taking Wifi config from memory");
 		char ip[16]; 
 		char gw[16]; 
@@ -318,44 +317,23 @@ boolean ConnectWifi(const char* ssid, const char* password)
 		IPAddress subnet = IPAddress(convertCharToUint8Array(sn));
 		IPAddress dns = IPAddress(convertCharToUint8Array(dn));
 
-		DBGL(local.toString());
-		DBGL(gateway.toString());
-		DBGL(subnet.toString());
-		DBGL(dns.toString());
+		// DBGL(local.toString());
+		// DBGL(gateway.toString());
+		// DBGL(subnet.toString());
+		// DBGL(dns.toString());
 
 		WiFi.config(local, gateway, subnet, dns);
 		WiFi.mode(WIFI_STA);
+		// ssid and password are previousl taken from memory when wifiExistsInMemory is true
 		WiFi.begin(ssid, password);
 	}
 
 	else {
 		WiFi.mode(WIFI_STA);
 		WiFi.begin(ssid, password);
-	
 	}
 
-	// if(wifi_config_saved) {
-	// 	DBGL("Taking from saved wifi config");
-	// 	IPAddress local = IPAddress(convertCharToUint8Array(clocalIP));
-	// 	IPAddress gateway = IPAddress(convertCharToUint8Array(cgatewayIP));
-	// 	IPAddress subnet = IPAddress(convertCharToUint8Array(csubnetIP));
-	// 	IPAddress dns = IPAddress(convertCharToUint8Array(cdnsIP));
-	// 	WiFi.config(local, gateway, subnet, dns);
-	// 	// DBGL("Using saved config");
-	// 	// DBG("Local: ");DBGL(local.toString());
-	// 	// DBG("Gateway: ");DBGL(gateway.toString());
-	// 	// DBG("Subent: ");DBGL(subnet.toString());
-	// 	// DBG("DNS: ");DBGL(dns.toString());
-	// 	WiFi.mode(WIFI_STA);
-	// 	WiFi.begin(ssid, password);
-	// }
-	// else {
-	// 	WiFi.mode(WIFI_STA);
-	// 	WiFi.begin(ssid, password);
-	// }
-
 	DBGL("Connecting to Wi-Fi");
-
 	unsigned long startMillis = millis();
 
 	while (WiFi.status() != WL_CONNECTED && millis() - startMillis < 5000)
@@ -363,6 +341,7 @@ boolean ConnectWifi(const char* ssid, const char* password)
 		DBG(".");
 		delay(100);
 	}
+	DBGL("");
 	
 	if (WiFi.status() == WL_CONNECTED)
 	{
@@ -378,33 +357,6 @@ boolean ConnectWifi(const char* ssid, const char* password)
 
 			memorySetWifiExists(true);
 		}
-		// if(!wifi_config_saved) 
-		// {
-		// 	strcpy(clocalIP, WiFi.localIP().toString().c_str());
-		// 	strcpy(cdnsIP, WiFi.dnsIP().toString().c_str());
-		// 	strcpy(cgatewayIP, WiFi.gatewayIP().toString().c_str());
-		// 	strcpy(csubnetIP, WiFi.subnetMask().toString().c_str());
-		// 	/* ---- Might not be needed ---- */
-		// 	// uint8_t* pbssid = WiFi.BSSID();
-		// 	// if(pbssid != nullptr){
-		// 	// 	memcpy(bssid, pbssid, 6);
-		// 	// }
-		// 	// channel = (uint8_t)WiFi.channel();
-		// 	// for (size_t i = 0; i < 6; i++)
-		// 	// {
-		// 	// 	Serial.print(bssid[i], HEX);
-		// 	// 	DBG(" ");
-		// 	// }
-		// 	// DBGL("");
-		// 	// DBG("Channel: "); DBGL(channel);
-		// 	/* ------------------------------ */
-		// 	// DBGL("Saved WiFi config:");
-		// 	// DBGL(clocalIP);
-		// 	// DBGL(cdnsIP);
-		// 	// DBGL(cgatewayIP);
-		// 	// DBGL(csubnetIP);
-		// 	wifi_config_saved = true;
-		// }
 		wifi_connected = true;
 	}
 	else // If connection failed and timeout reached
@@ -447,7 +399,7 @@ void ConnectFirebase()
 	// }
 	/* Assign the RTDB URL (required) */
 
-	// Firebase.reconnectNetwork(true);
+	Firebase.reconnectNetwork(true);
 	fbdo.setResponseSize(4096);
 
 	/* Assign the callback function for the long running token generation task */

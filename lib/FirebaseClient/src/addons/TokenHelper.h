@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "FirebaseFS.h"
 
+#include "RTDB.h"
+
 #include <Firebase.h>
 
 // This header file includes the functions that provide the token generation process info.
@@ -91,10 +93,20 @@ void tokenStatusCallback(TokenInfo info)
     {
         Serial_Printf("Token info: type = %s, status = %s\n", getTokenType(info), getTokenStatus(info));
         Serial_Printf("Token error: %s\n", getTokenError(info).c_str());
+        if(getbadConfig() == false) {
+            Serial_Printf("Bad config\n");
+            setbadConfig(true);
+        }
+        esp_deep_sleep(100);
     }
     else
     {
         Serial_Printf("Token info: type = %s, status = %s\n", getTokenType(info), getTokenStatus(info));
+        if(getbadConfig() == true) {
+            Serial_Printf("Good config\n");
+            setbadConfig(false);
+        }
+
     }
 }
 

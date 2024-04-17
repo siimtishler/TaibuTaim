@@ -3,3 +3,4 @@
 
 boolean initSoilSensor();
 uint16_t getSoilMeasurement();
+boolean deInitSoilSensor();

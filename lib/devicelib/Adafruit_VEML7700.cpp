@@ -79,8 +79,8 @@ bool Adafruit_VEML7700::begin(TwoWire *theWire, uint8_t sda, uint8_t scl, boolea
 			interruptEnable(false);
 			setPersistence(VEML7700_PERS_1);
 			setGain(VEML7700_GAIN_1_8);
-			setIntegrationTime(VEML7700_IT_100MS);
-			setPowerSaveMode(VEML7700_POWERSAVE_MODE4);
+			setIntegrationTime(VEML7700_IT_100MS, true);
+			setPowerSaveMode(VEML7700_POWERSAVE_MODE2);
 			powerSaveEnable(true);
 			enable(true);
 		}

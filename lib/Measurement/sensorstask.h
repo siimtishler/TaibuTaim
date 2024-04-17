@@ -1,4 +1,4 @@
 #pragma once
 #include <Arduino.h>
 
-void sensorsTask();
+void sensorsTask(const char *ssid, const char *password);

@@ -6,7 +6,7 @@
 #include "gauge.h"
 #include "humiditysensor.h"
 
-boolean ConnectWifi(const char* ssid, const char* password);
+boolean ConnectWifi(const char* ssid = "", const char* password = "", boolean tryConnectFirstTime = false);
 void DisconnectWifi();
 
 void ConnectFirebase();
@@ -24,4 +24,8 @@ void send(uint16_t val);
 
 void sendWiFiStatus();
 
+void setbadConfig(boolean val);
+boolean getbadConfig();
+
 extern boolean wifi_connected;
+

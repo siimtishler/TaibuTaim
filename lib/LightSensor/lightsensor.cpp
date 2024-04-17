@@ -17,11 +17,11 @@ uint16_t getLux() {
 }
 
 uint16_t getWhite() {
-    return lightsensor.readWhite();
+    return lightsensor.readWhite(true);
 }
 
 uint16_t getAmbient() {
-    return lightsensor.readALS();
+    return lightsensor.readALS(true);
 }
 
 boolean initLightSensor(){
