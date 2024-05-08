@@ -10,26 +10,26 @@
                             class="logo-img mr-2" 
                             src="../assets/site-logo.png" 
                             alt=""
-                            @click="$router.push('/')
+                            @click="$router.push('/feed')
                         ">
-                            <router-link class="navbar-brand mb-0" to="/">Taibu Taim</router-link>
+                            <router-link class="navbar-brand mb-0" to="/feed">Taibu Taim</router-link>
                         </li>
                         
                         
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <router-link class="nav-link" to="/">Kodu</router-link>
+                        </li> -->
+                        <li class="nav-item">
+                            <router-link class="nav-link" to="/feed">Andmed</router-link>
                         </li>
                         <li class="nav-item">
-                            <router-link class="nav-link" to="/feed">Feed</router-link>
-                        </li>
-                        <li class="nav-item">
-                            <router-link class="nav-link" to="/ble">BlueTooth connect</router-link>
+                            <router-link class="nav-link" to="/ble">Bluetooth ühendamine</router-link>
                         </li>
                         <li class="nav-item">
                             <p
                                 class="nav-link"
                                 @click="handleSignOut">
-                                Log Out
+                                Logi välja
                             </p>
                         </li>
                         <!-- <li class="nav-item">
@@ -60,7 +60,7 @@ const handleSignOut = () => {
         }
     }
     signOut(auth).then(() =>{
-        router.push("/");
+        router.push("/signin");
     });
 }
 

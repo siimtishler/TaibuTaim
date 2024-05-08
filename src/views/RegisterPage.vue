@@ -107,7 +107,7 @@ const register = () => {
         .then((data) => {
             console.log("Registered");
             toast.success("Registreeritud")
-            router.push('/feed');
+            router.push('/ble');
         })
         .catch((error) => {
             console.log(error.code);

@@ -6,6 +6,7 @@ import FeedPage from './views/FeedPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 import BluetoothPage from './views/BluetoothPage.vue';
 import PlantDetails from './views/PlantDetails.vue';
+import NoAccess from './views/NoAccess.vue';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -15,6 +16,10 @@ const router = createRouter({
         {
             path: '',
             component: HomePage,
+        },
+        {
+            path: '/noaccess',
+            component: NoAccess,
         },
         {
             path: '/register',
@@ -71,8 +76,7 @@ router.beforeEach(async (to, from, next) => {
         if(await getCurrentUser()) {
             next();
         } else {
-            alert("You do not have access!");
-            next("/");
+            next("/noaccess");
         }
     } else {
         next();

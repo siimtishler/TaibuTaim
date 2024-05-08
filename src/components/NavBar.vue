@@ -10,15 +10,15 @@
                             class="logo-img mr-2" 
                             src="../assets/site-logo.png" 
                             alt=""
-                            @click="$router.push('/')
+                            @click="$router.push('/signin')
                         ">
-                            <router-link class="navbar-brand mb-0" to="/">Taibu Taim</router-link>
+                            <router-link class="navbar-brand mb-0" to="/signin">Taibu Taim</router-link>
                         </li>
                         
                         
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <router-link class="nav-link" to="/">Kodu</router-link>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
                             <router-link class="nav-link" to="/signin">Logi sisse</router-link>
                         </li>

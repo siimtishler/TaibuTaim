@@ -12,6 +12,7 @@ import NavBar from './components/NavBar.vue';
 import NavBarAfterLogin from './components/NavBarAfterLogin.vue';
 import { ref, reactive, onMounted } from 'vue';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import router from './routes';
 
 const isLoggedIn = ref(false);
 
@@ -21,8 +22,10 @@ onMounted(() => {
 	onAuthStateChanged(auth, (user) => {
 		if (user) {
 			isLoggedIn.value = true;
+			router.push('/ble');
 		} else {
 			isLoggedIn.value = false;
+			router.push('/signin');
 		}
 	})
 })

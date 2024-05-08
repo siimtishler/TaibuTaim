@@ -66,6 +66,51 @@
         </div>
     </div>
 
+    <div class="container outer mt-3">
+        <div class="container measurements">
+            <div class="statistic-container">
+                <div class="stat-name">
+                    Avg:
+                </div>
+                <div class="statistic">
+                    {{ avgValue }} {{ unit }}
+                </div>
+            </div>
+            <div class="statistic-container">
+                <div class="stat-name">
+                    3h:
+                </div>
+                <div class="statistic" :class="{ 'positive': threeHrChange >= 0, 'negative': threeHrChange < 0 }">
+                    {{ threeHrChange }} {{ unit }}
+                </div>
+            </div>
+            <div class="statistic-container">
+                <div class="stat-name">
+                    6h:
+                </div>
+                <div class="statistic" :class="{ 'positive': sixHrChange >= 0, 'negative': sixHrChange < 0 }">
+                    {{ sixHrChange }} {{ unit }}
+                </div>
+            </div>
+            <div class="statistic-container">
+                <div class="stat-name">
+                    12h:
+                </div>
+                <div class="statistic" :class="{ 'positive': twelveHrChange >= 0, 'negative': twelveHrChange < 0 }">
+                    {{ twelveHrChange }} {{ unit }}
+                </div>
+            </div>
+            <div class="statistic-container">
+                <div class="stat-name">
+                    24h:
+                </div>
+                <div class="statistic" :class="{ 'positive': dayChange >= 0, 'negative': dayChange < 0 }">
+                    {{ dayChange }} {{ unit }}
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 
@@ -104,15 +149,31 @@ const soilMoisture = ref(0);
 const humidity = ref(0);
 const lux = ref(0);
 
-
+const avgValue = ref(0);
+const threeHrChange = ref(0);
+const sixHrChange = ref(0);
+const twelveHrChange = ref(0);
+const dayChange = ref(0);
+const unit = ref('');
 
 const selectedData = ref('battery');        // default dataset
 const selectedTimeHr = ref(24);             // default Time
 const selectedIntervalMinutes = ref(10);    // default Interval/frequency
 
+const units = {
+    battery: '%',
+    light: 'lx',
+    lux: 'lx',
+    ambient: 'lx',
+    white: 'lx',
+    temperature: '°C',
+    humidity: '%',
+    soil: '%',
+};
+
 
 const dataSets = {
-    battery: {title: 'Patarei', label: '%', borderColor: 'rgb(0, 161, 0)', min: 0, max: 100},
+    battery: {title: 'Aku', label: '%', borderColor: 'rgb(0, 161, 0)', min: 0, max: 100},
     light: {title: 'Valgus', label: 'Valgus', borderColor: 'rgb(231, 87, 87)' },
     lux: {title: '', label: 'Lux', borderColor: 'rgb(231, 87, 87)' },
     ambient: {title: '', label: 'Hajus', borderColor: 'rgb(255, 205, 86)' },
@@ -130,10 +191,11 @@ onMounted(async() => {
     await getDataWhenUpdates();
 
 
-    console.log( allData.value.battery[allData.value.battery.length - 1]);
+    // console.log( allData.value.battery[allData.value.battery.length - 1]);
     watch([selectedData, selectedTimeHr], ([newData, newTime]) => {
 
         updateChart(newData, newTime);
+        updateStatistics(newData, newTime);
         
     }, {immediate : true});
 
@@ -144,6 +206,47 @@ const getDataWhenUpdates = async () => {
         [allData.value, timestampData] = await getAllData();
         updateChart(selectedData.value, selectedTimeHr.value);
     })
+}
+const calculateSoilPercentage = (soil) => {
+    return Math.floor(100 * (1 - ((soil - 1800) / (3700 - 1800))));
+}
+
+const updateStatistics = (newData, newTime) => {
+    let filteredData = [];
+    let threeHrData = [];
+    let sixHrData = [];
+    let twelveHrData = [];
+    let dayData = [];
+    if (newData === 'light') {
+        filteredData = getFilteredData(newData, newTime).map(light => light['lux']);
+        threeHrData = getFilteredData(newData, 3).map(light => light['lux']);
+        sixHrData = getFilteredData(newData, 6).map(light => light['lux']);
+        twelveHrData = getFilteredData(newData, 12).map(light => light['lux']);
+        dayData = getFilteredData(newData, 24).map(light => light['lux']);
+    }
+    else if (newData === 'soil') {
+        filteredData = getFilteredData(newData, newTime).map(soil => calculateSoilPercentage(soil))
+        threeHrData = getFilteredData(newData, 3).map(soil => calculateSoilPercentage(soil));
+        sixHrData = getFilteredData(newData, 6).map(soil => calculateSoilPercentage(soil));
+        twelveHrData = getFilteredData(newData, 12).map(soil => calculateSoilPercentage(soil));
+        dayData = getFilteredData(newData, 24).map(soil => calculateSoilPercentage(soil));
+    }
+    else {
+        filteredData = getFilteredData(newData, newTime);
+        threeHrData = getFilteredData(newData, 3);
+        sixHrData = getFilteredData(newData, 6);
+        twelveHrData = getFilteredData(newData, 12);
+        dayData = getFilteredData(newData, 24);
+    }
+
+    const avg = filteredData.reduce((acc, curr) => acc + Number(curr), 0) / filteredData.length;    
+    avgValue.value = avg.toFixed(1);
+
+    threeHrChange.value = (threeHrData[threeHrData.length - 1] - threeHrData[0]).toFixed(1);
+    sixHrChange.value = (sixHrData[sixHrData.length - 1] - sixHrData[0]).toFixed(1);
+    twelveHrChange.value = (twelveHrData[twelveHrData.length - 1] - twelveHrData[0]).toFixed(1);
+    dayChange.value = (dayData[dayData.length - 1] - dayData[0]).toFixed(1);
+    unit.value = units[newData];
 }
 
 const updateChart = async (newData, newTime) => {
@@ -183,6 +286,17 @@ const updateChart = async (newData, newTime) => {
                     backgroundColor: dataSets[key].borderColor,
                     tension: 0.2
                 });
+            });
+        }
+        else if (newData === 'soil') {
+            let soilData = filteredData.map(soil => Math.floor(100 * (1 - ((soil - 1800) / (3700 - 1800)))));
+            myChart.data.datasets.push({
+                label: dataSets[newData].label,
+                data: soilData,
+                fill: false,
+                borderColor: dataSets[newData].borderColor,
+                backgroundColor: dataSets[newData].borderColor,
+                tension: 0.2
             });
         }
         else {
@@ -268,7 +382,7 @@ const getAllData = async () => {
 
     batteryPercentage.value = Math.floor(allData.value.battery[allData.value.battery.length - 1]);
     temperature.value = Math.floor(allData.value.temperature[allData.value.temperature.length - 1]);
-    soilMoisture.value = Math.floor(allData.value.soil[allData.value.soil.length - 1]);
+    soilMoisture.value = calculateSoilPercentage(allData.value.soil[allData.value.soil.length - 1]);
     humidity.value = Math.floor(allData.value.humidity[allData.value.humidity.length - 1]);
     lux.value = Math.floor(allData.value.light[allData.value.light.length - 1].lux);
     changeBatterySvg(batteryPercentage.value);
@@ -279,6 +393,11 @@ const getAllData = async () => {
 }
 
 const changeBatterySvg = (percentage) => {
+    // Sometimes MAX17048 gives more than 100% battery percentage
+    if (percentage > 100) {
+        batteryPercentage.value = 100;
+    }
+
     if (percentage >= 0 && percentage <= 10) {
         battSvg.value = require('../assets/batteries/batt8.svg');
     }
@@ -300,7 +419,7 @@ const changeBatterySvg = (percentage) => {
     else if (percentage > 75 && percentage <= 87.5) {
         battSvg.value = require('../assets/batteries/batt2.svg');
     }
-    else if (percentage > 87.5 && percentage <= 100) {
+    else if (percentage > 87.5) {
         battSvg.value = require('../assets/batteries/batt1.svg');
     }
 }
@@ -341,6 +460,41 @@ const changeBatterySvg = (percentage) => {
     padding: 1rem;
     font-size: 1.8rem;
     text-align: center;
+}
+
+.statistic-container {
+    height: 7rem;
+    width: 12rem;
+    margin-right: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.788);
+    color: rgb(65, 62, 62);
+    border-radius: 0.5rem;
+    padding: 0.3rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.stat-name {
+    /* border:1px solid; */
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    /* width: 30%; */
+    font-weight: bold;
+}
+
+.statistic {
+    font-size: 1.8rem;
+    /* border:1px solid; */
+    /* font-weight: bold; */
+}
+
+.positive {
+    color: rgb(0, 161, 0);
+}
+
+.negative {
+    color: rgb(127, 25, 25);
 }
 
 

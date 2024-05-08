@@ -100,7 +100,7 @@ const signIn = () => {
         .then((data) => {
             console.log("Signed in");
             toast.success("Sisse logitud");
-            router.push('/feed');
+            router.push('/ble');
         })
         .catch((error) => {
             console.log(error.code);
@@ -131,7 +131,7 @@ const signInWithGoogle = () => {
         .then((result) => {
             console.log(result.user);
             toast.success("Sisse logitud");
-            router.push('/feed');
+            router.push('/ble');
         })
         .catch((error) => {
             errMsg.value = error;
