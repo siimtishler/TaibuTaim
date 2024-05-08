@@ -1,6 +1,6 @@
 #include "nvsmemory.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 Preferences pref;

@@ -9,7 +9,7 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#define DEBUG
+// #define DEBUG
 #include "SerialDebug.h"
 
 // These are defined in ignore/API.h

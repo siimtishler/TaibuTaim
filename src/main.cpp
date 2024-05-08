@@ -19,34 +19,19 @@ gauge_measurements_t gauge_measurements = {0};
 
 RTC_DATA_ATTR int bootcnt = 0;
 
-RTC_DATA_ATTR boolean gaugePowerOn = false;
-RTC_DATA_ATTR boolean humiditySensPowerOn = false;
-RTC_DATA_ATTR boolean lightSensPowerOn = false;
-
-void powerOnDevices() {
-
-	if(!gaugePowerOn) {
-		if(powerOnGauge()){
-			// DBGL("Powering gauge");
-			gaugePowerOn = true;
-		}
-	}
-
-	if(!lightSensPowerOn) {
-		if(powerOnLightSensor()){
-			// DBGL("Powering light sensor");
-			lightSensPowerOn = true;
-		}
-	}
-
-	if(!humiditySensPowerOn) {
-		// Have to stop I2C interface for rewiring SDA and SCL for humidity sens
+void trySoil(){
+	for (int i = 0; i < 10; i++) {
+		uint16_t start = millis();
+		initSoilSensor();
+		delay(i*30);
+		uint16_t sm = getSoilMeasurement();
+		DBG("Soil Moisture: "); DBGL(sm);
 		Wire.end();
-		delay(1);
-		if(powerOnHumiditySensor()) {
-			// DBGL("Powering humidity sensor");
-			humiditySensPowerOn = true;
-		}
+    	delay(1);
+		deInitSoilSensor();
+		uint16_t end = millis();
+		DBG("Time spent Soil: "); DBGL(end-start);
+		delay(1000);
 	}
 }
 
@@ -58,11 +43,12 @@ void setup()
 	DBGL("*******/TERE TAIBUTAIM\\*******");
 	DBGL("");
 	DBGL("-----------------");
+	// trySoil();
+	// esp_deep_sleep(10000000);
 	memoryInit();
 	// If wifi exists, we can send to firebase
 
 	// TODO: Implement that user can change the sleep period from the app
-
 	if(memoryGetWifiExists()) {
 
 		bootcnt++;
@@ -76,17 +62,7 @@ void setup()
 		strcpy(password, memoryGetPassword().c_str());
 
 		powerOnDevices();
-		sensorsTask(ssid, password);
-
-		// if(ConnectWifi(memoryGetSSID().c_str(), memoryGetPassword().c_str())) {
-		// 	DBGL("Connecting to fb and stuff");
-		// 	ConnectFirebase();
-		// 	sendWiFiStatus();
-		// }
-		// else {
-		// 	esp_restart();
-		// }
-		// sendWiFiStatus();
+		mainTask(ssid, password);
 
 		DBGL("Sleeping");
 		DBGL("-----------------");
@@ -96,13 +72,6 @@ void setup()
 	else {
 		initBleSerial();
 	}
-
-	// ConnectWifi("CGA2121_2.4GHZ", "kell1234");
-	// ConnectFirebase();
-	// send(13);
-
-
-
 }
 
 void loop()
